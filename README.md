@@ -85,6 +85,11 @@ Game_World/
 
 프로젝트의 실제 동작을 확인할 수 있는 데모 영상들입니다:
 
+### 🎥 **프로젝트 전체 데모 (YouTube)**
+- **영상**: [🎮 Game World Generator - AI-Powered Interactive Game World Platform](https://youtu.be/aW_5SvkmTs0?si=mFbFEsE9keBfcji-)
+- **내용**: 전체 프로젝트 기능 시연 및 시스템 구조 설명
+- **기능**: 세계관 생성, NPC 대화, 무기 제작, 음성/비디오 생성 통합 데모
+
 ### 📹 **세계관 생성 데모**
 - **파일**: [세계관_추가샘플영상.mp4](세계관_추가샘플영상.mp4) (15MB)
 - **내용**: AI 기반 게임 세계 생성 과정
