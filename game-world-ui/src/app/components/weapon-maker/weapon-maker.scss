@@ -1,0 +1,2006 @@
+// 컴포넌트 스코프 스타일 (다른 컴포넌트에 영향 없음)
+.weapon-maker-container {
+  // 컴포넌트 내부 CSS 변수
+  --maker-bg-primary: #111;
+  --maker-text-primary: #e0e0e0;
+  --maker-border-color: #444;
+  --maker-button-bg: #a87e37;
+  --maker-button-text: #fff;
+  --maker-file-bg: #333;
+  --maker-file-text: #ccc;
+  --maker-error-color: #f55;
+  
+  margin: 0;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2rem;
+  background: transparent;
+  color: var(--text-primary);
+  font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, 'Malgun Gothic', '맑은 고딕', sans-serif;
+  min-height: 100vh;
+  max-width: 1000px;
+  width: 100%;
+  
+  h2 {
+    margin: 0 0 2rem 0;
+    font-size: 2rem;
+    font-weight: 600;
+    text-align: center;
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  
+  // 무기 타입 선택 카드
+  .weapon-selector {
+    width: 100%;
+    max-width: 800px;
+    background: var(--gradient-card);
+    border: 1px solid var(--border-primary);
+    border-radius: 16px;
+    padding: 2rem;
+    box-shadow: var(--shadow-lg);
+    backdrop-filter: blur(10px);
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+
+    &:hover {
+      border-color: var(--accent-primary);
+      box-shadow: var(--shadow-glow);
+    }
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: var(--gradient-primary);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    &:hover::before {
+      opacity: 1;
+    }
+
+    h3 {
+      margin: 0 0 1.5rem 0;
+      font-size: 1.3rem;
+      font-weight: 600;
+      text-align: center;
+      color: var(--text-primary);
+    }
+
+    .weapon-types {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+    }
+
+    .weapon-type-card {
+      background: var(--bg-secondary);
+      border: 2px solid var(--border-primary);
+      border-radius: 12px;
+      padding: 1.5rem;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+
+      &:hover {
+        border-color: var(--accent-primary);
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-glow);
+      }
+
+      &.selected {
+        border-color: var(--accent-primary);
+        background: rgba(var(--accent-color-rgb, 0, 212, 255), 0.1);
+        box-shadow: var(--shadow-glow);
+        
+        &::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          height: 3px;
+          background: var(--gradient-primary);
+        }
+
+        .weapon-emoji {
+          transform: scale(1.2);
+        }
+      }
+
+      &.custom {
+        border-style: dashed;
+        
+        &:hover {
+          border-color: var(--accent-secondary);
+          box-shadow: 0 0 20px rgba(124, 58, 237, 0.3);
+        }
+        
+        &.selected {
+          border-color: var(--accent-secondary);
+          background: rgba(124, 58, 237, 0.1);
+          box-shadow: 0 0 20px rgba(124, 58, 237, 0.3);
+          
+          &::before {
+            background: linear-gradient(135deg, var(--accent-secondary), var(--accent-primary));
+          }
+        }
+      }
+
+      .weapon-emoji {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        transition: transform 0.3s ease;
+        display: block;
+      }
+
+      h4 {
+        margin: 0 0 0.5rem 0;
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: var(--text-primary);
+      }
+
+      p {
+        margin: 0;
+        font-size: 0.9rem;
+        color: var(--text-secondary);
+        line-height: 1.4;
+      }
+    }
+  }
+
+  // 선택된 무기 정보 표시
+  .selected-weapon-info {
+    width: 100%;
+    max-width: 600px;
+    background: var(--gradient-card);
+    border: 1px solid var(--accent-primary);
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: var(--shadow-glow);
+    backdrop-filter: blur(10px);
+    position: relative;
+    overflow: hidden;
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: var(--gradient-primary);
+    }
+
+    .weapon-info-content {
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+
+      .weapon-icon {
+        font-size: 3rem;
+        flex-shrink: 0;
+      }
+
+      .weapon-details {
+        flex: 1;
+
+        h4 {
+          margin: 0 0 0.5rem 0;
+          font-size: 1.2rem;
+          font-weight: 600;
+          color: var(--accent-primary);
+        }
+
+        p {
+          margin: 0;
+          color: var(--text-secondary);
+          line-height: 1.4;
+        }
+      }
+    }
+  }
+
+  // 무기 설명 입력 영역
+  .weapon-description-input {
+    width: 100%;
+    max-width: 700px;
+    background: var(--gradient-card);
+    border: 1px solid var(--border-primary);
+    border-radius: 16px;
+    padding: 2rem;
+    box-shadow: var(--shadow-lg);
+    backdrop-filter: blur(10px);
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+
+    &:hover {
+      border-color: var(--accent-primary);
+      box-shadow: var(--shadow-glow);
+    }
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: var(--gradient-primary);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    &:hover::before {
+      opacity: 1;
+    }
+
+    h3 {
+      margin: 0 0 1.5rem 0;
+      font-size: 1.3rem;
+      font-weight: 600;
+      text-align: center;
+      color: var(--text-primary);
+    }
+
+    .input-container {
+      position: relative;
+      margin-bottom: 1.5rem;
+
+      .description-textarea {
+        width: 100%;
+        background: var(--bg-secondary);
+        border: 2px solid var(--border-primary);
+        border-radius: 12px;
+        padding: 1rem;
+        font-family: inherit;
+        font-size: 1rem;
+        color: var(--text-primary);
+        resize: vertical;
+        min-height: 120px;
+        transition: all 0.3s ease;
+
+        &:focus {
+          outline: none;
+          border-color: var(--accent-primary);
+          box-shadow: 0 0 0 3px rgba(var(--accent-color-rgb, 0, 212, 255), 0.1);
+        }
+
+        &::placeholder {
+          color: var(--text-secondary);
+          font-style: italic;
+        }
+      }
+
+      .character-count {
+        position: absolute;
+        bottom: 8px;
+        right: 12px;
+        font-size: 0.8rem;
+        color: var(--text-secondary);
+        background: var(--bg-primary);
+        padding: 0.2rem 0.5rem;
+        border-radius: 8px;
+        border: 1px solid var(--border-primary);
+      }
+    }
+
+    .description-examples {
+      p {
+        margin: 0 0 1rem 0;
+        font-size: 0.9rem;
+        color: var(--text-secondary);
+        font-weight: 500;
+      }
+
+      .example-chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+
+        .example-chip {
+          background: var(--bg-secondary);
+          border: 1px solid var(--border-primary);
+          border-radius: 20px;
+          padding: 0.5rem 1rem;
+          font-size: 0.85rem;
+          color: var(--text-primary);
+          cursor: pointer;
+          transition: all 0.3s ease;
+          display: inline-flex;
+          align-items: center;
+          gap: 0.5rem;
+
+          &:hover {
+            border-color: var(--accent-primary);
+            background: var(--bg-tertiary);
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-md);
+          }
+
+          &:active {
+            transform: translateY(0);
+          }
+        }
+      }
+    }
+  }
+
+  // AI 모델 선택 카드
+  .ai-model-selector {
+    width: 100%;
+    max-width: 600px;
+    background: var(--gradient-card);
+    border: 1px solid var(--border-primary);
+    border-radius: 16px;
+    padding: 2rem;
+    box-shadow: var(--shadow-lg);
+    backdrop-filter: blur(10px);
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+
+    &:hover {
+      border-color: var(--accent-primary);
+      box-shadow: var(--shadow-glow);
+    }
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: var(--gradient-primary);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    &:hover::before {
+      opacity: 1;
+    }
+
+    h3 {
+      margin: 0 0 1.5rem 0;
+      font-size: 1.3rem;
+      font-weight: 600;
+      text-align: center;
+      color: var(--text-primary);
+    }
+
+    .model-options {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+
+    .model-option {
+      background: var(--bg-secondary);
+      border: 2px solid var(--border-primary);
+      border-radius: 12px;
+      padding: 1.5rem;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+
+      &:hover {
+        border-color: var(--accent-primary);
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
+      }
+
+      &.selected {
+        border-color: var(--accent-primary);
+        background: rgba(var(--accent-color-rgb, 0, 212, 255), 0.1);
+        box-shadow: var(--shadow-glow);
+        
+        &::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          height: 3px;
+          background: var(--gradient-primary);
+        }
+
+        .model-icon {
+          transform: scale(1.2);
+          filter: drop-shadow(0 0 10px rgba(var(--accent-color-rgb, 0, 212, 255), 0.5));
+        }
+      }
+
+      .model-icon {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        transition: all 0.3s ease;
+        display: block;
+      }
+
+      h4 {
+        margin: 0 0 0.5rem 0;
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: var(--text-primary);
+      }
+
+      p {
+        margin: 0 0 0.5rem 0;
+        font-size: 0.9rem;
+        color: var(--text-secondary);
+        line-height: 1.4;
+      }
+
+      small {
+        font-size: 0.8rem;
+        color: var(--text-tertiary);
+        font-style: italic;
+      }
+    }
+  }
+
+  // 업로더 컨트롤 카드 (커스텀 모드)
+  .uploader {
+    background: var(--gradient-card);
+    border: 1px solid var(--accent-secondary);
+    border-radius: 16px;
+    padding: 2rem;
+    box-shadow: 0 0 20px rgba(124, 58, 237, 0.3);
+    backdrop-filter: blur(10px);
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    align-items: center;
+    width: 100%;
+    max-width: 600px;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+
+    &:hover {
+      border-color: var(--accent-secondary);
+      box-shadow: 0 0 25px rgba(124, 58, 237, 0.4);
+      transform: translateY(-2px);
+    }
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(135deg, var(--accent-secondary), var(--accent-primary));
+      opacity: 1;
+    }
+
+    h3 {
+      margin: 0 0 1rem 0;
+      font-size: 1.2rem;
+      font-weight: 600;
+      text-align: center;
+      color: var(--accent-secondary);
+    }
+
+    // 파일 입력 그룹
+    .file-inputs {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      width: 100%;
+    }
+
+    .file-input {
+      background: var(--bg-secondary);
+      border: 2px solid var(--border-primary);
+      border-radius: 12px;
+      color: var(--text-primary);
+      padding: 1rem;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-family: inherit;
+      width: 100%;
+
+      &:hover {
+        border-color: var(--accent-secondary);
+        background: var(--bg-tertiary);
+        transform: translateY(-1px);
+      }
+
+      &:focus {
+        outline: none;
+        border-color: var(--accent-secondary);
+        box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
+      }
+
+      // 파일 선택 버튼 스타일링
+      &::file-selector-button {
+        background: linear-gradient(135deg, var(--accent-secondary), var(--accent-primary));
+        color: white;
+        border: none;
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        margin-right: 1rem;
+        cursor: pointer;
+        font-weight: 500;
+        transition: all 0.3s ease;
+
+        &:hover {
+          transform: translateY(-1px);
+          box-shadow: var(--shadow-md);
+        }
+      }
+    }
+
+    .load-btn {
+      background: linear-gradient(135deg, var(--accent-secondary), var(--accent-primary));
+      border: none;
+      color: white;
+      padding: 1rem 2rem;
+      border-radius: 12px;
+      font-family: inherit;
+      font-weight: 600;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: var(--shadow-md);
+      position: relative;
+      overflow: hidden;
+      min-width: 160px;
+
+      &:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 0 20px rgba(124, 58, 237, 0.4);
+      }
+
+      &:active {
+        transform: translateY(0);
+      }
+
+      &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        transform: none !important;
+      }
+
+      &::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+        transition: left 0.5s ease;
+      }
+
+      &:hover::before {
+        left: 100%;
+      }
+    }
+  }
+  
+  .canvas-container {
+    background: var(--gradient-card);
+    border: 1px solid var(--border-primary);
+    border-radius: 16px;
+    padding: 2rem;
+    box-shadow: var(--shadow-lg);
+    backdrop-filter: blur(10px);
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+
+    &:hover {
+      border-color: var(--accent-primary);
+      box-shadow: var(--shadow-glow);
+    }
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: var(--gradient-primary);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    &:hover::before {
+      opacity: 1;
+    }
+  }
+  
+  .mold-canvas {
+    border: 3px solid var(--border-primary);
+    border-radius: 16px;
+    background: #000;
+    max-width: 100%;
+    height: auto;
+    box-shadow: var(--shadow-lg);
+    transition: all 0.3s ease;
+
+    &:hover {
+      border-color: var(--accent-primary);
+      box-shadow: var(--shadow-glow);
+    }
+  }
+  
+  .load-btn,
+  .start-btn {
+    padding: 0.55rem 1.1rem;
+    font-size: 1rem;
+    border-radius: 0.4rem;
+    border: none;
+    background: var(--maker-button-bg);
+    color: var(--maker-button-text);
+    cursor: pointer;
+    transition: transform 0.2s;
+    display: inline-block;
+    
+    &:hover:not(:disabled) {
+      transform: translateY(-2px);
+    }
+    
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+  }
+  
+  .error-message {
+    color: var(--accent-danger);
+    font-size: 0.9rem;
+    text-align: center;
+    margin: 1rem 0;
+    padding: 1rem;
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid var(--accent-danger);
+    border-radius: 8px;
+    backdrop-filter: blur(10px);
+  }
+
+  .start-btn {
+    background: var(--gradient-primary);
+    border: none;
+    color: white;
+    padding: 1.2rem 2.5rem;
+    border-radius: 12px;
+    font-family: inherit;
+    font-weight: 600;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: var(--shadow-lg);
+    position: relative;
+    overflow: hidden;
+    min-width: 200px;
+    margin-top: 1rem;
+
+    &:hover:not(:disabled) {
+      transform: translateY(-3px);
+      box-shadow: var(--shadow-glow);
+    }
+
+    &:active {
+      transform: translateY(-1px);
+    }
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none !important;
+    }
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+      transition: left 0.6s ease;
+    }
+
+    &:hover::before {
+      left: 100%;
+    }
+  }
+
+  // 진행상황 표시기
+  .progress-indicator {
+    background: var(--gradient-card);
+    border: 1px solid var(--accent-primary);
+    border-radius: 16px;
+    padding: 2rem;
+    box-shadow: var(--shadow-glow);
+    backdrop-filter: blur(10px);
+    position: relative;
+    overflow: hidden;
+    max-width: 400px;
+    width: 100%;
+    margin: 1rem 0;
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: var(--gradient-primary);
+    }
+
+    .progress-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+
+      .loading-spinner {
+        width: 40px;
+        height: 40px;
+        border: 4px solid var(--border-primary);
+        border-top: 4px solid var(--accent-primary);
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+      }
+
+      p {
+        margin: 0;
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--accent-primary);
+        text-align: center;
+      }
+    }
+  }
+
+  // 결과 이미지 컨테이너
+  .result-container {
+    background: var(--gradient-card);
+    border: 1px solid var(--accent-primary);
+    border-radius: 16px;
+    padding: 2rem;
+    box-shadow: var(--shadow-glow);
+    backdrop-filter: blur(10px);
+    position: relative;
+    overflow: hidden;
+    max-width: 500px;
+    width: 100%;
+    margin: 1rem 0;
+    text-align: center;
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: var(--gradient-primary);
+    }
+
+    h3 {
+      margin: 0 0 1.5rem 0;
+      font-size: 1.5rem;
+      font-weight: 600;
+      background: var(--gradient-primary);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .result-image-container {
+      margin-bottom: 1.5rem;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: var(--shadow-md);
+
+      .result-image {
+        width: 100%;
+        max-width: 300px;
+        height: auto;
+        border-radius: 12px;
+        transition: transform 0.3s ease;
+
+        &:hover {
+          transform: scale(1.05);
+        }
+      }
+    }
+
+    .result-actions {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .download-btn,
+    .generate-3d-btn {
+      border: none;
+      color: white;
+      padding: 1rem 2rem;
+      border-radius: 12px;
+      font-family: inherit;
+      font-weight: 600;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: var(--shadow-md);
+      position: relative;
+      overflow: hidden;
+
+      &:hover:not(:disabled) {
+        transform: translateY(-2px);
+      }
+
+      &:active {
+        transform: translateY(0);
+      }
+
+      &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        transform: none !important;
+      }
+
+      &::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+        transition: left 0.5s ease;
+      }
+
+      &:hover::before {
+        left: 100%;
+      }
+    }
+
+    .download-btn {
+      background: linear-gradient(135deg, #10B981, #059669);
+
+      &:hover:not(:disabled) {
+        box-shadow: 0 0 20px rgba(16, 185, 129, 0.4);
+      }
+    }
+
+    .generate-3d-btn {
+      background: linear-gradient(135deg, #8B5CF6, #7C3AED);
+
+      &:hover:not(:disabled) {
+        box-shadow: 0 0 20px rgba(139, 92, 246, 0.4);
+      }
+    }
+
+    .reset-btn {
+      background: linear-gradient(135deg, var(--accent-secondary), var(--accent-primary));
+
+      &:hover:not(:disabled) {
+        box-shadow: var(--shadow-glow);
+      }
+    }
+  }
+
+  // 3D 모델 생성 진행상황
+  .model-3d-progress {
+    border-color: #8B5CF6;
+    box-shadow: 0 0 20px rgba(139, 92, 246, 0.3);
+
+    &::before {
+      background: linear-gradient(135deg, #8B5CF6, #7C3AED);
+    }
+
+    .progress-content {
+      p {
+        color: #8B5CF6;
+      }
+
+      small {
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+        margin-top: 0.5rem;
+        display: block;
+        text-align: center;
+      }
+    }
+  }
+
+  // 3D 모델 결과 컨테이너
+  .model-3d-result {
+    background: var(--gradient-card);
+    border: 1px solid #8B5CF6;
+    border-radius: 16px;
+    padding: 2rem;
+    box-shadow: 0 0 20px rgba(139, 92, 246, 0.3);
+    backdrop-filter: blur(10px);
+    position: relative;
+    overflow: hidden;
+    max-width: 600px;
+    width: 100%;
+    margin: 1rem 0;
+    text-align: center;
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(135deg, #8B5CF6, #7C3AED);
+    }
+
+    h3 {
+      margin: 0 0 1.5rem 0;
+      font-size: 1.5rem;
+      font-weight: 600;
+      background: linear-gradient(135deg, #8B5CF6, #7C3AED);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .model-info {
+      display: flex;
+      justify-content: center;
+      gap: 2rem;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+
+      .info-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 1rem;
+        background: var(--bg-secondary);
+        border: 1px solid var(--border-primary);
+        border-radius: 12px;
+        min-width: 120px;
+
+        .info-label {
+          font-size: 0.9rem;
+          color: var(--text-secondary);
+          font-weight: 500;
+        }
+
+        .info-value {
+          font-size: 1.1rem;
+          font-weight: 600;
+          color: #8B5CF6;
+        }
+      }
+    }
+
+    .model-actions {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-bottom: 1.5rem;
+
+      .download-3d-btn,
+      .reset-all-btn {
+        border: none;
+        color: white;
+        padding: 1rem 2rem;
+        border-radius: 12px;
+        font-family: inherit;
+        font-weight: 600;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: var(--shadow-md);
+        position: relative;
+        overflow: hidden;
+
+        &:hover {
+          transform: translateY(-2px);
+        }
+
+        &:active {
+          transform: translateY(0);
+        }
+
+        &::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: -100%;
+          width: 100%;
+          height: 100%;
+          background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+          transition: left 0.5s ease;
+        }
+
+        &:hover::before {
+          left: 100%;
+        }
+      }
+
+      .download-3d-btn {
+        background: linear-gradient(135deg, #8B5CF6, #7C3AED);
+
+        &:hover {
+          box-shadow: 0 0 20px rgba(139, 92, 246, 0.4);
+        }
+      }
+
+      .reset-all-btn {
+        background: linear-gradient(135deg, #EF4444, #DC2626);
+
+        &:hover {
+          box-shadow: 0 0 20px rgba(239, 68, 68, 0.4);
+        }
+      }
+    }
+
+    .model-preview-info {
+      background: rgba(139, 92, 246, 0.1);
+      border: 1px solid rgba(139, 92, 246, 0.3);
+      border-radius: 12px;
+      padding: 1rem;
+
+      p {
+        margin: 0;
+        font-size: 0.9rem;
+        color: var(--text-secondary);
+        line-height: 1.4;
+      }
+    }
+  }
+
+  // 로딩 스피너 애니메이션
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+}
+
+// 반응형 디자인
+@media (max-width: 768px) {
+  .weapon-maker-container {
+    padding: 1rem;
+    gap: 1.5rem;
+    max-width: 100%;
+
+    h2 {
+      font-size: 1.5rem;
+    }
+
+    .weapon-selector {
+      padding: 1.5rem;
+      
+      .weapon-types {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+      }
+
+      .weapon-type-card {
+        padding: 1.25rem;
+
+        .weapon-emoji {
+          font-size: 2.5rem;
+        }
+
+        h4 {
+          font-size: 1.1rem;
+        }
+
+        p {
+          font-size: 0.85rem;
+        }
+      }
+    }
+
+    .selected-weapon-info {
+      padding: 1.25rem;
+      
+      .weapon-info-content {
+        gap: 1rem;
+        
+        .weapon-icon {
+          font-size: 2.5rem;
+        }
+
+        .weapon-details h4 {
+          font-size: 1.1rem;
+        }
+      }
+    }
+
+    .weapon-description-input {
+      padding: 1.5rem;
+      
+      h3 {
+        font-size: 1.2rem;
+      }
+
+      .input-container {
+        .description-textarea {
+          padding: 0.75rem;
+          font-size: 0.9rem;
+          min-height: 100px;
+        }
+      }
+
+      .description-examples {
+        .example-chips {
+          gap: 0.5rem;
+
+          .example-chip {
+            padding: 0.4rem 0.8rem;
+            font-size: 0.8rem;
+          }
+        }
+      }
+    }
+
+    .uploader {
+      padding: 1.5rem;
+      gap: 1rem;
+
+      .file-inputs {
+        gap: 0.75rem;
+      }
+
+      .file-input {
+        padding: 0.75rem;
+        font-size: 0.85rem;
+
+        &::file-selector-button {
+          padding: 0.4rem 0.8rem;
+          margin-right: 0.75rem;
+        }
+      }
+
+      .load-btn {
+        padding: 0.875rem 1.5rem;
+        font-size: 0.9rem;
+        min-width: 140px;
+      }
+    }
+
+    .canvas-container {
+      padding: 1.5rem;
+    }
+
+    .mold-canvas {
+      width: 100%;
+      max-width: 100%;
+      height: auto;
+    }
+
+    .start-btn {
+      padding: 1rem 2rem;
+      font-size: 1rem;
+      min-width: 180px;
+    }
+
+    .result-container {
+      padding: 1.25rem;
+      
+      .result-actions {
+        gap: 0.75rem;
+        
+        .download-btn,
+        .generate-3d-btn,
+        .reset-btn {
+          padding: 0.875rem 1.5rem;
+          font-size: 0.9rem;
+          min-width: 140px;
+        }
+      }
+    }
+
+    .ai-model-selector {
+      padding: 1.5rem;
+      
+      h3 {
+        font-size: 1.2rem;
+      }
+
+      .model-options {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+      }
+
+      .model-option {
+        padding: 1.25rem;
+
+        .model-icon {
+          font-size: 2.5rem;
+        }
+
+        h4 {
+          font-size: 1.1rem;
+        }
+
+        p {
+          font-size: 0.85rem;
+        }
+
+        small {
+          font-size: 0.75rem;
+        }
+      }
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .weapon-maker-container {
+    padding: 0.75rem;
+
+    .weapon-selector {
+      padding: 1rem;
+      
+      .weapon-types {
+        gap: 0.5rem;
+      }
+    }
+
+    .selected-weapon-info {
+      padding: 1rem;
+      
+      .weapon-info-content {
+        flex-direction: column;
+        text-align: center;
+        gap: 0.75rem;
+      }
+    }
+
+    .weapon-description-input {
+      padding: 1rem;
+      
+      h3 {
+        font-size: 1.1rem;
+      }
+
+      .input-container {
+        .description-textarea {
+          padding: 0.75rem;
+          font-size: 0.85rem;
+          min-height: 80px;
+        }
+        
+        .character-count {
+          font-size: 0.75rem;
+          bottom: 6px;
+          right: 8px;
+        }
+      }
+
+      .description-examples {
+        .example-chips {
+          gap: 0.4rem;
+
+          .example-chip {
+            padding: 0.3rem 0.6rem;
+            font-size: 0.75rem;
+            flex-direction: column;
+            text-align: center;
+            line-height: 1.2;
+          }
+        }
+      }
+    }
+
+    .uploader {
+      padding: 1rem;
+
+      .file-inputs {
+        .file-input {
+          &::file-selector-button {
+            margin-right: 0.5rem;
+            margin-bottom: 0.5rem;
+          }
+        }
+      }
+    }
+
+    .canvas-container {
+      padding: 1rem;
+    }
+  }
+}
+
+/* 무기 불러오기 섹션 */
+.weapon-loader-section {
+  background: linear-gradient(135deg, #2a2a3e, #1a1a2e);
+  border: 2px solid #4a90e2;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 20px;
+  
+  h3 {
+    color: #4a90e2;
+    text-align: center;
+    margin-bottom: 15px;
+    font-size: 1.2em;
+  }
+  
+  .loader-options {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    flex-wrap: wrap;
+    
+    .load-option-btn {
+      background: linear-gradient(135deg, #4a90e2, #357abd);
+      color: white;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1em;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      
+      &:hover:not(:disabled) {
+        background: linear-gradient(135deg, #357abd, #2e6ba8);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(74, 144, 226, 0.4);
+      }
+      
+      &:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+    }
+    
+    .file-loader {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      
+      .loading-text {
+        color: #4a90e2;
+        font-size: 0.9em;
+        animation: pulse 1.5s infinite;
+      }
+    }
+  }
+}
+
+/* 저장된 무기 모달 */
+.saved-weapons-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+  .modal-backdrop {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(5px);
+  }
+  
+  .saved-weapons-content {
+    position: relative;
+    background: linear-gradient(135deg, #2a2a3e, #1a1a2e);
+    border: 2px solid #4a90e2;
+    border-radius: 16px;
+    max-width: 90vw;
+    max-height: 85vh;
+    width: 800px;
+    padding: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    overflow-y: auto;
+    
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding-bottom: 15px;
+      border-bottom: 2px solid #4a90e2;
+      
+      h3 {
+        color: #4a90e2;
+        margin: 0;
+        font-size: 1.4em;
+      }
+      
+      .close-btn {
+        background: none;
+        border: none;
+        color: #ff6b6b;
+        font-size: 1.5em;
+        cursor: pointer;
+        padding: 5px;
+        border-radius: 50%;
+        transition: all 0.3s ease;
+        
+        &:hover {
+          background: rgba(255, 107, 107, 0.1);
+          transform: scale(1.1);
+        }
+      }
+    }
+    
+    .no-weapons {
+      text-align: center;
+      color: #888;
+      padding: 40px 20px;
+      
+      p {
+        margin: 10px 0;
+        font-size: 1.1em;
+      }
+    }
+    
+    .weapons-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 15px;
+      margin-bottom: 20px;
+      
+      .saved-weapon-card {
+        background: linear-gradient(135deg, #3a3a4e, #2a2a3e);
+        border: 2px solid #555;
+        border-radius: 12px;
+        padding: 15px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        position: relative;
+        
+        &:hover {
+          border-color: #4a90e2;
+          transform: translateY(-2px);
+          box-shadow: 0 4px 15px rgba(74, 144, 226, 0.3);
+        }
+        
+        &.selected {
+          border-color: #4a90e2;
+          background: linear-gradient(135deg, #4a4a6e, #3a3a5e);
+          box-shadow: 0 0 15px rgba(74, 144, 226, 0.5);
+        }
+        
+        .weapon-thumbnail {
+          width: 80px;
+          height: 80px;
+          border-radius: 8px;
+          overflow: hidden;
+          margin: 0 auto 12px;
+          border: 2px solid #555;
+          
+          .thumbnail-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+          }
+          
+          .no-thumbnail {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #4a4a6e, #3a3a5e);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            
+            .weapon-type-emoji {
+              font-size: 2em;
+            }
+          }
+        }
+        
+        .weapon-info {
+          text-align: center;
+          
+          .weapon-name {
+            color: #fff;
+            font-size: 1.1em;
+            margin: 0 0 8px 0;
+            font-weight: 600;
+          }
+          
+          .weapon-desc {
+            color: #ccc;
+            font-size: 0.9em;
+            margin: 0 0 10px 0;
+            line-height: 1.4;
+          }
+          
+          .weapon-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.8em;
+            
+            .weapon-type {
+              background: #4a90e2;
+              color: white;
+              padding: 2px 8px;
+              border-radius: 4px;
+              font-weight: 600;
+            }
+            
+            .weapon-date {
+              color: #888;
+            }
+          }
+        }
+        
+        .weapon-actions {
+          position: absolute;
+          top: 10px;
+          right: 10px;
+          
+          .delete-btn {
+            background: rgba(255, 107, 107, 0.2);
+            border: 1px solid #ff6b6b;
+            color: #ff6b6b;
+            padding: 4px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: all 0.3s ease;
+            
+            &:hover {
+              background: #ff6b6b;
+              color: white;
+              transform: scale(1.05);
+            }
+          }
+        }
+      }
+    }
+    
+    .modal-footer {
+      display: flex;
+      gap: 15px;
+      justify-content: center;
+      padding-top: 15px;
+      border-top: 2px solid #4a90e2;
+      
+      .load-selected-btn {
+        background: linear-gradient(135deg, #4caf50, #45a049);
+        color: white;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 1em;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        
+        &:hover:not(:disabled) {
+          background: linear-gradient(135deg, #45a049, #3d8b40);
+          transform: translateY(-2px);
+          box-shadow: 0 4px 12px rgba(76, 175, 80, 0.4);
+        }
+        
+        &:disabled {
+          background: #555;
+          cursor: not-allowed;
+          opacity: 0.6;
+        }
+      }
+      
+      .cancel-btn {
+        background: linear-gradient(135deg, #ff6b6b, #e74c3c);
+        color: white;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 1em;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        
+        &:hover {
+          background: linear-gradient(135deg, #e74c3c, #c0392b);
+          transform: translateY(-2px);
+          box-shadow: 0 4px 12px rgba(255, 107, 107, 0.4);
+        }
+      }
+    }
+  }
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+  .saved-weapons-modal .saved-weapons-content {
+    width: 95vw;
+    padding: 15px;
+    
+    .weapons-grid {
+      grid-template-columns: 1fr;
+    }
+    
+    .modal-footer {
+      flex-direction: column;
+      
+      .load-selected-btn,
+      .cancel-btn {
+        width: 100%;
+      }
+    }
+  }
+  
+  .weapon-loader-section .loader-options {
+    flex-direction: column;
+    align-items: center;
+    
+    .load-option-btn {
+      width: 100%;
+      max-width: 250px;
+    }
+  }
+}
+
+/* 애니메이션 */
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.saved-weapons-modal .saved-weapons-content {
+  animation: modalFadeIn 0.3s ease-out;
+}
+
+/* 3D 모델 뷰어 모달 */
+.model-3d-viewer-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+  .modal-backdrop {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(8px);
+  }
+  
+  .model-3d-viewer-content {
+    position: relative;
+    background: linear-gradient(135deg, #2a2a3e, #1a1a2e);
+    border: 2px solid #8b5cf6;
+    border-radius: 20px;
+    max-width: 95vw;
+    max-height: 95vh;
+    width: 900px;
+    height: 700px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7);
+    overflow: hidden;
+    animation: modalFadeIn 0.4s ease-out;
+    
+    .viewer-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px 25px 15px;
+      border-bottom: 2px solid #8b5cf6;
+      background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(124, 58, 237, 0.1));
+      
+      h3 {
+        color: #8b5cf6;
+        margin: 0;
+        font-size: 1.5em;
+        font-weight: 600;
+      }
+      
+      .close-btn {
+        background: none;
+        border: none;
+        color: #ff6b6b;
+        font-size: 1.8em;
+        cursor: pointer;
+        padding: 8px;
+        border-radius: 50%;
+        transition: all 0.3s ease;
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        
+        &:hover {
+          background: rgba(255, 107, 107, 0.15);
+          transform: scale(1.1);
+        }
+      }
+    }
+    
+    .viewer-container {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      
+      .three-js-container {
+        flex: 1;
+        background: linear-gradient(135deg, #1a1a2e, #2a2a3e);
+        border-radius: 12px;
+        margin: 20px;
+        margin-bottom: 10px;
+        overflow: hidden;
+        box-shadow: inset 0 4px 20px rgba(0, 0, 0, 0.5);
+        position: relative;
+        
+        canvas {
+          display: block;
+          border-radius: 12px;
+        }
+        
+        &::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          height: 3px;
+          background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+          z-index: 1;
+        }
+      }
+      
+      .viewer-controls {
+        padding: 10px 20px;
+        text-align: center;
+        
+        p {
+          margin: 4px 0;
+          font-size: 0.9em;
+          color: #bbb;
+          
+          &:first-child {
+            color: #8b5cf6;
+            font-weight: 500;
+          }
+        }
+      }
+    }
+    
+    .viewer-footer {
+      display: flex;
+      gap: 20px;
+      justify-content: center;
+      padding: 20px 25px;
+      border-top: 1px solid rgba(139, 92, 246, 0.3);
+      background: linear-gradient(135deg, rgba(139, 92, 246, 0.05), rgba(124, 58, 237, 0.05));
+      
+      .download-in-viewer-btn,
+      .close-viewer-btn {
+        border: none;
+        color: white;
+        padding: 12px 24px;
+        border-radius: 10px;
+        font-family: inherit;
+        font-weight: 600;
+        font-size: 1em;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        position: relative;
+        overflow: hidden;
+        min-width: 160px;
+        
+        &:hover {
+          transform: translateY(-2px);
+        }
+        
+        &:active {
+          transform: translateY(0);
+        }
+        
+        &::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: -100%;
+          width: 100%;
+          height: 100%;
+          background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.25), transparent);
+          transition: left 0.6s ease;
+        }
+        
+        &:hover::before {
+          left: 100%;
+        }
+      }
+      
+      .download-in-viewer-btn {
+        background: linear-gradient(135deg, #10b981, #059669);
+        
+        &:hover {
+          box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+        }
+      }
+      
+      .close-viewer-btn {
+        background: linear-gradient(135deg, #ef4444, #dc2626);
+        
+        &:hover {
+          box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4);
+        }
+      }
+    }
+  }
+}
+
+/* 3D 모델 뷰어 버튼 */
+.view-3d-btn {
+  background: linear-gradient(135deg, #8B5CF6, #7C3AED) !important;
+  border: none;
+  color: white;
+  padding: 1rem 2rem;
+  border-radius: 12px;
+  font-family: inherit;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: var(--shadow-md);
+  position: relative;
+  overflow: hidden;
+
+  &:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 0 20px rgba(139, 92, 246, 0.4);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none !important;
+  }
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s ease;
+  }
+
+  &:hover::before {
+    left: 100%;
+  }
+}
+
+/* 반응형 디자인 - 3D 뷰어 */
+@media (max-width: 768px) {
+  .model-3d-viewer-modal .model-3d-viewer-content {
+    width: 95vw;
+    height: 90vh;
+    border-radius: 16px;
+    
+    .viewer-header {
+      padding: 15px 20px 12px;
+      
+      h3 {
+        font-size: 1.3em;
+      }
+      
+      .close-btn {
+        font-size: 1.6em;
+        width: 36px;
+        height: 36px;
+      }
+    }
+    
+    .viewer-container {
+      .three-js-container {
+        margin: 15px;
+        margin-bottom: 8px;
+      }
+      
+      .viewer-controls {
+        padding: 8px 15px;
+        
+        p {
+          font-size: 0.85em;
+        }
+      }
+    }
+    
+    .viewer-footer {
+      flex-direction: column;
+      gap: 12px;
+      padding: 15px 20px;
+      
+      .download-in-viewer-btn,
+      .close-viewer-btn {
+        width: 100%;
+        padding: 14px 20px;
+        min-width: auto;
+      }
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .model-3d-viewer-modal .model-3d-viewer-content {
+    width: 98vw;
+    height: 95vh;
+    border-radius: 12px;
+    
+    .viewer-header {
+      padding: 12px 16px 10px;
+      
+      h3 {
+        font-size: 1.2em;
+      }
+    }
+    
+    .viewer-container {
+      .three-js-container {
+        margin: 12px;
+        margin-bottom: 6px;
+        border-radius: 8px;
+      }
+    }
+    
+    .viewer-footer {
+      padding: 12px 16px;
+    }
+  }
+}

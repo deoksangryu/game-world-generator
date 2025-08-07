@@ -1,0 +1,130 @@
+<!-- 
+==================================================
+세계관 표시 컴포넌트 - 원본 텍스트 중심 UI
+==================================================
+복잡한 파싱 없이 AI가 생성한 원본 텍스트를 깔끔하게 보여주는 컴포넌트입니다.
+
+주요 기능:
+1. 원본/포맷 텍스트 토글
+2. 전문 복사 기능  
+3. 읽기 통계 (단어수, 예상 읽기 시간)
+4. 확장/축소 기능
+5. 깔끔한 타이포그래피
+-->
+
+<div class="world-display-container" *ngIf="gameWorld">
+  <!-- ==================== 헤더 섹션 ==================== -->
+  <mat-card class="world-header-card">
+    <mat-card-header>
+      <div mat-card-avatar class="world-avatar">🌍</div>
+      <mat-card-title>{{ gameWorld.theme || '생성된 세계관' }}</mat-card-title>
+      <mat-card-subtitle>{{ gameWorld.setting || gameWorld.originalInput || '새로운 게임 세계' }}</mat-card-subtitle>
+    </mat-card-header>
+
+    <!-- 컨트롤 버튼들 -->
+    <mat-card-actions class="world-controls">
+      <!-- 통계 정보 -->
+      <div class="stats-info">
+        <mat-chip-set>
+          <mat-chip>📝 {{ getWordCount() }}단어</mat-chip>
+          <mat-chip>📖 {{ getEstimatedReadTime() }}분 읽기</mat-chip>
+          <mat-chip>📊 {{ getCharCount() }}자</mat-chip>
+        </mat-chip-set>
+      </div>
+
+      <!-- 액션 버튼들 -->
+      <div class="action-buttons">
+        <!-- 복사 버튼 -->
+        <button 
+          mat-icon-button 
+          (click)="copyToClipboard()" 
+          matTooltip="전문 복사"
+          color="primary">
+          <mat-icon>content_copy</mat-icon>
+        </button>
+
+        <!-- 원본/포맷 토글 -->
+        <button 
+          mat-icon-button 
+          (click)="toggleRawText()" 
+          [matTooltip]="showRawText ? '포맷된 텍스트 보기' : '원본 텍스트 보기'"
+          [color]="showRawText ? 'accent' : 'primary'">
+          <mat-icon>{{ showRawText ? 'article' : 'code' }}</mat-icon>
+        </button>
+
+        <!-- 확장/축소 토글 -->
+        <button 
+          mat-icon-button 
+          (click)="toggleExpanded()" 
+          [matTooltip]="isExpanded ? '축소하기' : '전체 보기'"
+          color="primary">
+          <mat-icon>{{ isExpanded ? 'expand_less' : 'expand_more' }}</mat-icon>
+        </button>
+      </div>
+    </mat-card-actions>
+  </mat-card>
+
+  <!-- ==================== 텍스트 표시 영역 ==================== -->
+  <mat-card class="world-content-card">
+    <!-- 모드 표시 -->
+    <div class="display-mode-indicator" *ngIf="!isExpanded || showRawText">
+      <mat-chip 
+        [color]="showRawText ? 'accent' : 'primary'" 
+        selected>
+        {{ showRawText ? '원본 텍스트' : '포맷된 텍스트' }}
+        {{ !isExpanded ? ' (미리보기)' : '' }}
+      </mat-chip>
+    </div>
+
+    <!-- 메인 텍스트 내용 -->
+    <mat-card-content class="world-text-content">
+      <div 
+        class="text-display"
+        [class.raw-text-mode]="showRawText"
+        [class.formatted-text-mode]="!showRawText"
+        [class.preview-mode]="!isExpanded"
+        [innerHTML]="getFormattedDescription()">
+      </div>
+
+      <!-- 미리보기 모드에서 더보기 안내 -->
+      <div class="preview-notice" *ngIf="!isExpanded && gameWorld.expandedWorldDescription && gameWorld.expandedWorldDescription.length > 300">
+        <button 
+          mat-stroked-button 
+          color="primary" 
+          (click)="toggleExpanded()">
+          <mat-icon>expand_more</mat-icon>
+          전체 내용 보기 ({{ getExpandedWordCount() }}단어 더)
+        </button>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- ==================== 생성 정보 ==================== -->
+  <mat-card class="world-meta-card" *ngIf="gameWorld.createdAt">
+    <mat-card-content>
+      <div class="meta-info">
+        <div class="meta-item">
+          <mat-icon>schedule</mat-icon>
+          <span>{{ gameWorld.createdAt | date:'medium' }}에 생성됨</span>
+        </div>
+        <div class="meta-item" *ngIf="gameWorld.originalInput">
+          <mat-icon>lightbulb</mat-icon>
+          <span>원본 프롬프트: "{{ gameWorld.originalInput }}"</span>
+        </div>
+      </div>
+    </mat-card-content>
+  </mat-card>
+</div>
+
+<!-- 세계관이 없을 때 표시 -->
+<div class="no-world-placeholder" *ngIf="!gameWorld">
+  <mat-card class="placeholder-card">
+    <mat-card-content>
+      <div class="placeholder-content">
+        <mat-icon class="placeholder-icon">public</mat-icon>
+        <h3>세계관을 생성해주세요</h3>
+        <p>위의 입력 폼을 사용해서 새로운 게임 세계관을 만들어보세요!</p>
+      </div>
+    </mat-card-content>
+  </mat-card>
+</div>

@@ -1,0 +1,307 @@
+<div class="npc-voice-mapping-container">
+  <!-- 헤더 섹션 -->
+  <div class="header-section">
+    <h2>🎭 NPC 보이스 매핑 관리</h2>
+    <p class="description">NPC와 음성 배우를 연결하여 대화 시 자동으로 음성을 생성합니다</p>
+    
+    <!-- 통계 정보 -->
+    <div class="stats-section">
+      <div class="stat-card">
+        <span class="stat-label">총 매핑</span>
+        <span class="stat-value">{{ mappingStats.total }}</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-label">자동 할당</span>
+        <span class="stat-value">{{ mappingStats.auto }}</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-label">수동 설정</span>
+        <span class="stat-value">{{ mappingStats.custom }}</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-label">음성 배우</span>
+        <span class="stat-value">{{ voiceActors.length }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 메시지 표시 -->
+  <div class="message-section" *ngIf="errorMessage || successMessage">
+    <div class="alert alert-error" *ngIf="errorMessage">
+      <span>❌ {{ errorMessage }}</span>
+      <button (click)="clearMessagesNow()">✕</button>
+    </div>
+    <div class="alert alert-success" *ngIf="successMessage">
+      <span>✅ {{ successMessage }}</span>
+      <button (click)="clearMessagesNow()">✕</button>
+    </div>
+  </div>
+
+  <!-- 로딩 상태 -->
+  <div class="loading-section" *ngIf="isLoading || isLoadingVoices">
+    <div class="loading-spinner"></div>
+    <p>{{ isLoadingVoices ? '음성 배우 목록을 로드하는 중...' : '데이터를 로드하는 중...' }}</p>
+  </div>
+
+  <!-- 메인 컨텐츠 -->
+  <div class="main-content" *ngIf="!isLoading">
+    
+    <!-- 컨트롤 패널 -->
+    <div class="control-panel">
+      
+      <!-- 필터 및 검색 -->
+      <div class="filter-section">
+        <div class="filter-group">
+          <label>🔍 검색</label>
+          <input 
+            type="text" 
+            [(ngModel)]="searchTerm" 
+            placeholder="NPC 이름, 역할, ID 검색..."
+            class="search-input">
+        </div>
+        
+        <div class="filter-group">
+          <label>🎭 역할 필터</label>
+          <select [(ngModel)]="selectedRole" class="role-select">
+            <option value="">모든 역할</option>
+            <option *ngFor="let role of availableRoles" [value]="role">{{ role }}</option>
+          </select>
+        </div>
+        
+        <div class="filter-group">
+          <label class="checkbox-label">
+            <input type="checkbox" [(ngModel)]="showOnlyMapped">
+            매핑된 NPC만 표시
+          </label>
+        </div>
+      </div>
+
+      <!-- 액션 버튼 -->
+      <div class="action-buttons">
+        <button 
+          class="btn btn-primary" 
+          (click)="autoAssignAllVoices()"
+          [disabled]="voiceActors.length === 0">
+          🎯 자동 할당
+        </button>
+        
+        <button 
+          class="btn btn-secondary" 
+          (click)="refreshVoiceActors()">
+          🔄 배우 새로고침
+        </button>
+        
+        <button 
+          class="btn btn-export" 
+          (click)="exportMappings()">
+          📥 내보내기
+        </button>
+        
+        <label class="btn btn-import">
+          📤 가져오기
+          <input 
+            type="file" 
+            accept=".json" 
+            (change)="importMappings($event)" 
+            style="display: none;">
+        </label>
+        
+        <button 
+          class="btn btn-danger" 
+          (click)="clearAllMappings()">
+          🗑️ 전체 삭제
+        </button>
+      </div>
+    </div>
+
+    <!-- 새 NPC 추가 -->
+    <div class="add-npc-section">
+      <h3>➕ 새 NPC 추가</h3>
+      <div class="add-npc-form">
+        <input 
+          type="text" 
+          [(ngModel)]="newNPC.id" 
+          placeholder="NPC ID (예: merchant_002)"
+          class="form-input">
+        
+        <input 
+          type="text" 
+          [(ngModel)]="newNPC.name" 
+          placeholder="NPC 이름"
+          class="form-input">
+        
+        <select 
+          [(ngModel)]="newNPC.role" 
+          class="form-select">
+          <option value="">역할 선택</option>
+          <option *ngFor="let role of getSupportedRoles()" [value]="role">
+            {{ role }}
+          </option>
+        </select>
+        
+        <input 
+          type="text" 
+          [(ngModel)]="newNPC.description" 
+          placeholder="설명 (선택사항)"
+          class="form-input">
+        
+        <button 
+          class="btn btn-add" 
+          (click)="addNewNPC()"
+          [disabled]="!newNPC.id || !newNPC.name || !newNPC.role">
+          추가
+        </button>
+      </div>
+    </div>
+
+    <!-- NPC 목록 및 매핑 -->
+    <div class="npc-list-section">
+      <h3>📋 NPC 목록 ({{ filteredNPCs.length }}명)</h3>
+      
+      <div class="npc-grid" *ngIf="filteredNPCs.length > 0">
+        <div 
+          class="npc-card" 
+          *ngFor="let npc of filteredNPCs"
+          [class.mapped]="isNPCMapped(npc.id)">
+          
+          <!-- NPC 정보 -->
+          <div class="npc-info">
+            <div class="npc-header">
+              <h4>{{ npc.name }}</h4>
+              <span class="npc-role">{{ npc.role }}</span>
+              <span class="npc-id">{{ npc.id }}</span>
+            </div>
+            
+            <p class="npc-description" *ngIf="npc.description">
+              {{ npc.description }}
+            </p>
+            
+            <div class="npc-preference">
+              <small>기본 선호도: {{ getDefaultPreference(npc.role) }}</small>
+            </div>
+          </div>
+
+          <!-- 현재 매핑 정보 -->
+          <div class="current-mapping" *ngIf="isNPCMapped(npc.id)">
+            <div class="mapping-info">
+              <span class="mapping-label">현재 음성:</span>
+              <span class="mapping-value">{{ getVoiceActorName(npc.id) }}</span>
+              <span 
+                class="mapping-type" 
+                [class.auto]="!getVoiceMappingForNPC(npc.id)?.isCustom"
+                [class.custom]="getVoiceMappingForNPC(npc.id)?.isCustom">
+                {{ getVoiceMappingForNPC(npc.id)?.isCustom ? '수동' : '자동' }}
+              </span>
+            </div>
+          </div>
+
+          <!-- 보이스 선택 -->
+          <div class="voice-selection">
+            <label>🎤 음성 배우 선택:</label>
+            <select 
+              class="voice-select"
+              [value]="getVoiceMappingForNPC(npc.id)?.voiceActorId || ''"
+              (change)="assignVoiceToNPC(npc.id, $any($event.target).value)"
+              [disabled]="voiceActors.length === 0">
+              
+              <option value="">음성 배우 선택...</option>
+              <optgroup label="남성 배우">
+                <option 
+                  *ngFor="let actor of getMaleVoiceActors()" 
+                  [value]="actor.id">
+                  {{ actor.name }}
+                </option>
+              </optgroup>
+              <optgroup label="여성 배우">
+                <option 
+                  *ngFor="let actor of getFemaleVoiceActors()" 
+                  [value]="actor.id">
+                  {{ actor.name }}
+                </option>
+              </optgroup>
+            </select>
+            
+            <!-- 추천 음성 배우 섹션 -->
+            <div class="recommended-voices" *ngIf="voiceActors.length > 0">
+              <h5>💡 이 NPC에게 추천하는 음성:</h5>
+              <div class="voice-recommendations">
+                <div 
+                  *ngFor="let actor of getRecommendedActors(npc.role)" 
+                  class="voice-recommendation-card">
+                  <div class="actor-info">
+                    <span class="actor-name">{{ actor.name }}</span>
+                    <span class="actor-gender">{{ actor.gender === 'male' ? '남성' : '여성' }}</span>
+                  </div>
+                  
+                  <div class="recommendation-actions">
+                    <!-- 샘플 듣고 매핑 -->
+                    <button 
+                      class="btn btn-sample-map"
+                      (click)="playSampleWithMappingOption(npc.id, actor.id)"
+                      title="샘플을 들어보고 마음에 들면 자동 매핑">
+                      🎵 듣고 매핑
+                    </button>
+                    
+                    <!-- 바로 매핑 -->
+                    <button 
+                      class="btn btn-quick-map"
+                      (click)="quickMapVoiceToNPC(npc.id, actor.id)"
+                      title="샘플 없이 바로 매핑">
+                      ⚡ 바로 매핑
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 액션 버튼 -->
+          <div class="npc-actions">
+            <button 
+              class="btn btn-auto" 
+              (click)="autoAssignSingleVoice(npc.id)"
+              [disabled]="voiceActors.length === 0"
+              title="이 NPC에 자동으로 적합한 음성 할당">
+              🎯 자동 할당
+            </button>
+            
+            <button 
+              class="btn btn-remove-mapping" 
+              (click)="removeVoiceMapping(npc.id)"
+              *ngIf="isNPCMapped(npc.id)"
+              title="음성 매핑 제거">
+              🔇 매핑 제거
+            </button>
+            
+            <button 
+              class="btn btn-remove-npc" 
+              (click)="removeNPC(npc.id)"
+              title="NPC 제거">
+              🗑️ NPC 제거
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- NPC 없음 메시지 -->
+      <div class="no-npcs" *ngIf="filteredNPCs.length === 0">
+        <p>조건에 맞는 NPC가 없습니다.</p>
+        <button class="btn btn-secondary" (click)="resetFilters()">
+          필터 초기화
+        </button>
+      </div>
+    </div>
+
+    <!-- 도움말 섹션 -->
+    <div class="help-section">
+      <h3>📚 사용 방법</h3>
+      <ul>
+        <li><strong>자동 할당:</strong> NPC 역할에 따라 적합한 음성 배우를 자동으로 매핑합니다</li>
+        <li><strong>수동 선택:</strong> 드롭다운에서 원하는 음성 배우를 직접 선택할 수 있습니다</li>
+        <li><strong>필터링:</strong> 검색어나 역할로 NPC 목록을 필터링할 수 있습니다</li>
+        <li><strong>데이터 관리:</strong> 매핑 설정을 파일로 내보내거나 가져올 수 있습니다</li>
+        <li><strong>채팅 연동:</strong> 설정된 매핑은 NPC 채팅 시 자동으로 음성 생성에 사용됩니다</li>
+      </ul>
+    </div>
+  </div>
+</div> 

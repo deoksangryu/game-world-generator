@@ -1,0 +1,101 @@
+# Dependencies
+node_modules/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Virtual environments
+*_venv/
+3d_venv/
+audio_venv/
+npc_venv/
+openai_venv/
+talk_venv/
+voice_venv/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Logs
+*.log
+logs/
+unified_server.log
+
+# Temporary files
+temp/
+tmp/
+*.tmp
+*.temp
+
+# Generated files
+generated_videos/
+temp_videos/
+output/
+voice_cache/
+load/
+
+# API Keys and sensitive data
+.env
+*.key
+*.pem
+
+# Large files
+*.mp4
+*.avi
+*.mov
+*.wav
+*.mp3
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.ico
+
+# Build outputs
+dist/
+build/
+*.tgz
+*.tar.gz
+
+# Angular
+.angular/
+.sass-cache/
+connect.lock
+coverage/
+libpeerconnection.log
+npm-debug.log
+yarn-error.log
+testem.log
+typings/
+
+# Python
+*.egg-info/
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/ 

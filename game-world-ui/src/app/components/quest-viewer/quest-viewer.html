@@ -1,0 +1,117 @@
+<!-- 
+====================================
+퀘스트 뷰어 컴포넌트 템플릿
+====================================
+NPC가 제공하는 퀘스트의 상세 정보를 표시하는 컴포넌트입니다.
+
+주요 구성:
+1. 퀘스트 헤더 - 이름, 종류, 난이도 배지
+2. 퀘스트 정보 - 소요시간, 진행률, 프로그레스 바
+3. 퀘스트 설명 - 스토리 및 배경 설명
+4. 목표 목록 - 완료해야 할 목표들과 진행 상태
+5. 보상 목록 - 완료 시 받을 수 있는 보상들
+6. 선행 조건 - 퀘스트 수행을 위한 필수 조건들
+-->
+
+<div class="quest-viewer-container">
+  <!-- ==================== 퀘스트 헤더 (이름/배지) ==================== -->
+  <div class="quest-header">
+    <!-- 퀘스트 이름 -->
+    <h4 class="quest-name">{{ quest.name }}</h4>
+    <!-- 퀘스트 분류 배지들 -->
+    <div class="quest-badges">
+      <!-- 퀘스트 종류 배지 (메인, 사이드 등) -->
+      <span class="quest-type" [style.background-color]="getQuestTypeColor(quest.questType)">
+        {{ getQuestTypeText(quest.questType) }}
+      </span>
+      <!-- 난이도 배지 (쉬움, 보통, 어려움 등) -->
+      <span class="quest-difficulty" [style.background-color]="getDifficultyColor(quest.difficulty)">
+        {{ getDifficultyText(quest.difficulty) }}
+      </span>
+    </div>
+  </div>
+
+  <!-- ==================== 퀘스트 메타 정보 ==================== -->
+  <div class="quest-info">
+    <!-- 퀘스트 기본 정보 -->
+    <div class="quest-meta">
+      <!-- 예상 소요시간 -->
+      <div class="meta-item">
+        <span class="meta-label">예상 소요시간:</span>
+        <span class="meta-value">{{ formatTime(quest.estimatedTime) }}</span>
+      </div>
+      <!-- 목표 완료 현황 -->
+      <div class="meta-item">
+        <span class="meta-label">진행률:</span>
+        <span class="meta-value">{{ getCompletedObjectivesCount() }}/{{ quest.objectives.length }}</span>
+      </div>
+    </div>
+
+    <!-- 진행률 프로그레스 바 -->
+    <div class="progress-bar">
+      <div class="progress-fill" [style.width.%]="getProgressPercentage()"></div>
+    </div>
+  </div>
+
+  <!-- ==================== 퀘스트 설명 ==================== -->
+  <div class="quest-description">
+    <p>{{ quest.description }}</p>
+  </div>
+
+  <!-- ==================== 퀘스트 목표 목록 ==================== -->
+  <div class="quest-objectives">
+    <h5>📋 목표</h5>
+    <div class="objectives-list">
+      <!-- 개별 목표 아이템 (완료 상태에 따라 스타일 변경) -->
+      <div *ngFor="let objective of quest.objectives" 
+           class="objective-item" 
+           [class.completed]="objective.completed">
+        <!-- 목표 내용 -->
+        <div class="objective-content">
+          <!-- 목표 종류 아이콘 -->
+          <span class="objective-icon">{{ getObjectiveTypeIcon(objective.type) }}</span>
+          <!-- 목표 설명 텍스트 -->
+          <span class="objective-text">{{ objective.description }}</span>
+          <!-- 수량 정보 (있는 경우) -->
+          <span *ngIf="objective.quantity" class="objective-quantity">
+            ({{ objective.quantity }})
+          </span>
+        </div>
+        <!-- 완료 상태 표시 -->
+        <div class="objective-status">
+          <span *ngIf="objective.completed" class="status-complete">✓</span>
+          <span *ngIf="!objective.completed" class="status-pending">○</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== 퀘스트 보상 목록 ==================== -->
+  <div class="quest-rewards">
+    <h5>🏆 보상</h5>
+    <div class="rewards-list">
+      <!-- 개별 보상 아이템 -->
+      <div *ngFor="let reward of quest.rewards" class="reward-item">
+        <!-- 보상 종류 아이콘 -->
+        <span class="reward-icon">{{ getRewardTypeIcon(reward.type) }}</span>
+        <!-- 보상 내용 텍스트 -->
+        <span class="reward-text">
+          {{ getRewardTypeText(reward.type) }} {{ reward.amount }}
+          <!-- 아이템 이름 (있는 경우) -->
+          <span *ngIf="reward.itemName" class="reward-item-name">({{ reward.itemName }})</span>
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== 선행 조건 (있는 경우에만) ==================== -->
+  <div class="quest-prerequisites" *ngIf="quest.prerequisites && quest.prerequisites.length > 0">
+    <h5>⚠️ 선행 조건</h5>
+    <div class="prerequisites-list">
+      <!-- 개별 선행 조건 태그 -->
+      <span *ngFor="let prerequisite of quest.prerequisites" class="prerequisite-tag">
+        {{ prerequisite }}
+      </span>
+    </div>
+  </div>
+</div> 

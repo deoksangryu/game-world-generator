@@ -1,0 +1,119 @@
+<!-- 저장/불러오기 모달 오버레이 -->
+<div class="modal-overlay" (click)="onClose()">
+  <div class="modal-container" (click)="$event.stopPropagation()">
+    <!-- 모달 헤더 -->
+    <div class="modal-header">
+      <h2 *ngIf="mode === 'save'">💾 세계관 저장하기</h2>
+      <h2 *ngIf="mode === 'load'">📂 세계관 불러오기</h2>
+      <button class="close-button" (click)="onClose()">✕</button>
+    </div>
+
+    <!-- 모달 콘텐츠 -->
+    <div class="modal-content">
+      <!-- 저장 모드 -->
+      <div *ngIf="mode === 'save'" class="save-section">
+        <div class="save-form">
+          <div class="form-group">
+            <label for="save-name">저장 이름 *</label>
+            <input 
+              id="save-name"
+              type="text" 
+              [(ngModel)]="saveName" 
+              placeholder="세계관 이름을 입력하세요"
+              maxlength="50"
+              class="form-input">
+          </div>
+          
+          <div class="form-group">
+            <label for="save-description">설명 (선택사항)</label>
+            <textarea 
+              id="save-description"
+              [(ngModel)]="saveDescription" 
+              placeholder="세계관에 대한 간단한 설명을 입력하세요"
+              maxlength="200"
+              rows="3"
+              class="form-textarea"></textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- 저장된 세계관 목록 -->
+      <div class="saved-worlds-section">
+        <h3 *ngIf="mode === 'save'">📚 저장된 세계관</h3>
+        <h3 *ngIf="mode === 'load'">📚 불러올 세계관 선택</h3>
+        
+        <div *ngIf="savedWorlds.length === 0" class="no-saves">
+          저장된 세계관이 없습니다.
+        </div>
+        
+        <div *ngIf="savedWorlds.length > 0" class="worlds-list">
+          <div *ngFor="let world of savedWorlds" 
+               class="world-item"
+               [class.selected]="selectedWorldId === world.id"
+               (click)="selectWorld(world.id)">
+            
+            <!-- 세계관 정보 -->
+            <div class="world-info">
+              <div class="world-header">
+                <h4>🌍 {{ world.name }}</h4>
+                <div class="world-meta">
+                  <span class="world-theme">{{ world.world.theme }}</span>
+                  <span class="world-date">{{ formatDate(world.createdAt) }}</span>
+                </div>
+              </div>
+              
+              <p *ngIf="world.description" class="world-description">
+                {{ world.description }}
+              </p>
+              
+              <div class="world-stats">
+                <span class="stat">👤 NPC {{ world.npcs.length }}명</span>
+                <span class="stat">📜 역사 {{ world.history.length }}개</span>
+              </div>
+            </div>
+            
+            <!-- 액션 버튼들 -->
+            <div class="world-actions">
+              <button *ngIf="mode === 'load'" 
+                      class="action-button primary" 
+                      (click)="onLoad(world.id); $event.stopPropagation()">
+                불러오기
+              </button>
+              <button class="action-button danger" 
+                      (click)="onDelete(world.id); $event.stopPropagation()">
+                삭제
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 모달 푸터 -->
+    <div class="modal-footer">
+      <button class="modal-button secondary" (click)="onClose()">
+        취소
+      </button>
+      
+      <button *ngIf="mode === 'save'" 
+              class="modal-button primary" 
+              (click)="onSave()"
+              [disabled]="!saveName.trim() || isLoading">
+        <span *ngIf="!isLoading">💾 저장하기</span>
+        <span *ngIf="isLoading" class="loading-text">
+          <div class="loading-spinner"></div> 저장 중...
+        </span>
+      </button>
+      
+      <button *ngIf="mode === 'load'" 
+              class="modal-button primary" 
+              (click)="onLoad()"
+              [disabled]="!selectedWorldId || isLoading">
+        <span *ngIf="!isLoading">📂 불러오기</span>
+        <span *ngIf="isLoading" class="loading-text">
+          <div class="loading-spinner"></div> 불러오는 중...
+        </span>
+      </button>
+    </div>
+  </div>
+</div> 

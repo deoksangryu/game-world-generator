@@ -1,0 +1,326 @@
+<div class="weapon-maker-container">
+  <h2>⚒️ 전설의 무기 주조 애니메이션</h2>
+  
+  <!-- 무기 불러오기 섹션 -->
+  <div class="weapon-loader-section">
+    <h3>📂 무기 불러오기</h3>
+    <div class="loader-options">
+      <button (click)="loadSavedWeapons()" class="load-option-btn">
+        💾 저장된 무기 불러오기
+      </button>
+      <div class="file-loader">
+        <input 
+          type="file" 
+          #loadedImageFileInput
+          accept="image/*" 
+          style="display: none"
+          (change)="loadWeaponFromFile()">
+        <button (click)="loadedImageFileInput.click()" class="load-option-btn" [disabled]="isLoadingFromFile">
+          📁 파일에서 불러오기
+        </button>
+        <span *ngIf="isLoadingFromFile" class="loading-text">불러오는 중...</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 저장된 무기 목록 모달 -->
+  <div *ngIf="showSavedWeapons" class="saved-weapons-modal">
+    <div class="modal-backdrop" (click)="closeSavedWeapons()"></div>
+    <div class="saved-weapons-content">
+      <div class="modal-header">
+        <h3>💾 저장된 무기 목록</h3>
+        <button (click)="closeSavedWeapons()" class="close-btn">✕</button>
+      </div>
+      
+      <div *ngIf="savedWeapons.length === 0" class="no-weapons">
+        <p>💭 저장된 무기가 없습니다.</p>
+        <p>무기를 생성하고 저장해보세요!</p>
+      </div>
+      
+      <div *ngIf="savedWeapons.length > 0" class="weapons-grid">
+        <div 
+          *ngFor="let weapon of savedWeapons" 
+          class="saved-weapon-card"
+          [class.selected]="selectedSavedWeapon?.id === weapon.id"
+          (click)="selectSavedWeapon(weapon)">
+          
+          <div class="weapon-thumbnail">
+            <img *ngIf="weapon.thumbnail" [src]="weapon.thumbnail" [alt]="weapon.name" class="thumbnail-img">
+            <div *ngIf="!weapon.thumbnail" class="no-thumbnail">
+              <span class="weapon-type-emoji">
+                {{ weapon.weaponType === 'sword' ? '⚔️' : weapon.weaponType === 'axe' ? '🪓' : '🔧' }}
+              </span>
+            </div>
+          </div>
+          
+          <div class="weapon-info">
+            <h4 class="weapon-name">{{ weapon.name }}</h4>
+            <p class="weapon-desc">{{ weapon.description | slice:0:50 }}{{ weapon.description.length > 50 ? '...' : '' }}</p>
+            <div class="weapon-meta">
+              <span class="weapon-type">{{ 
+                weapon.weaponType === 'sword' ? '검' : 
+                weapon.weaponType === 'axe' ? '도끼' : '커스텀' 
+              }}</span>
+              <span class="weapon-date">{{ weapon.createdAt | date:'MM/dd HH:mm' }}</span>
+            </div>
+          </div>
+          
+          <div class="weapon-actions">
+            <button (click)="deleteSavedWeapon(weapon); $event.stopPropagation()" class="delete-btn" title="삭제">
+              🗑️
+            </button>
+          </div>
+        </div>
+      </div>
+      
+      <div *ngIf="savedWeapons.length > 0" class="modal-footer">
+        <button 
+          (click)="loadSelectedWeapon()" 
+          [disabled]="!selectedSavedWeapon"
+          class="load-selected-btn">
+          ✅ 선택한 무기 불러오기
+        </button>
+        <button (click)="closeSavedWeapons()" class="cancel-btn">
+          ❌ 취소
+        </button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- 무기 타입 선택 카드 -->
+  <div class="weapon-selector">
+    <h3>🛡️ 주조할 무기를 선택하세요</h3>
+    
+    <div class="weapon-types">
+      <div 
+        *ngFor="let weapon of weaponTypes" 
+        class="weapon-type-card"
+        [class.selected]="selectedWeaponType === weapon.id"
+        (click)="selectWeaponType(weapon.id)">
+        <div class="weapon-emoji">{{ weapon.emoji }}</div>
+        <h4>{{ weapon.name }}</h4>
+        <p>{{ weapon.description }}</p>
+      </div>
+      
+      <!-- 커스텀 옵션 -->
+      <div 
+        class="weapon-type-card custom"
+        [class.selected]="isCustomMode"
+        (click)="enableCustomMode()">
+        <div class="weapon-emoji">🔧</div>
+        <h4>커스텀</h4>
+        <p>직접 이미지를 업로드합니다</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 선택된 무기 정보 표시 -->
+  <div *ngIf="!isCustomMode && getSelectedWeaponInfo()" class="selected-weapon-info">
+    <div class="weapon-info-content">
+      <span class="weapon-icon">{{ getSelectedWeaponInfo()?.emoji }}</span>
+      <div class="weapon-details">
+        <h4>{{ getSelectedWeaponInfo()?.name }} 주조 준비완료</h4>
+        <p>{{ getSelectedWeaponInfo()?.description }}</p>
+      </div>
+    </div>
+  </div>
+  
+  <!-- 무기 설명 입력 영역 -->
+  <div class="weapon-description-input">
+    <h3>📝 무기 설명을 입력하세요</h3>
+    <div class="input-container">
+      <textarea 
+        [(ngModel)]="weaponDescription"
+        placeholder="어떤 무기를 만들고 싶으신가요? 상세하게 설명해주세요..."
+        class="description-textarea"
+        rows="4"
+        maxlength="500"></textarea>
+      <div class="character-count">
+        {{ weaponDescription.length }}/500
+      </div>
+    </div>
+    <div class="description-examples">
+      <p>💡 예시:</p>
+      <div class="example-chips">
+        <span class="example-chip" (click)="setExampleDescription('dragon')">
+          🐉 용의 힘이 깃든 검
+        </span>
+        <span class="example-chip" (click)="setExampleDescription('ice')">
+          ❄️ 얼음의 마법이 담긴 도끼
+        </span>
+        <span class="example-chip" (click)="setExampleDescription('lightning')">
+          ⚡ 번개를 부르는 망치
+        </span>
+        <span class="example-chip" (click)="setExampleDescription('shadow')">
+          🌙 그림자를 다루는 단검
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- AI 모델 선택 -->
+  <div class="ai-model-selector">
+    <h3>🤖 AI 모델 선택</h3>
+    <div class="model-options">
+      <div 
+        class="model-option"
+        [class.selected]="!useFluxModel"
+        (click)="useFluxModel = false">
+        <div class="model-icon">⚔️</div>
+        <h4>기존 모델</h4>
+        <p>OpenAI 기반 무기 생성</p>
+        <small>빠른 생성 속도</small>
+      </div>
+      
+      <div 
+        class="model-option"
+        [class.selected]="useFluxModel"
+        (click)="useFluxModel = true">
+        <div class="model-icon">🎨</div>
+        <h4>FLUX 모델</h4>
+        <p>고품질 디테일 무기 생성</p>
+        <small>고해상도, 느린 속도</small>
+      </div>
+    </div>
+  </div>
+  
+  <!-- 커스텀 업로더 (커스텀 모드일 때만 표시) -->
+  <div *ngIf="isCustomMode" class="uploader">
+    <h3>📁 사용자 정의 이미지 업로드</h3>
+    <div class="file-inputs">
+      <input 
+        type="file" 
+        #moldFileInput
+        accept="image/*" 
+        title="주조틀 사진을 선택하세요 (예: sword_panel.png)"
+        class="file-input">
+      <input 
+        type="file" 
+        #maskFileInput
+        accept="image/*" 
+        title="바이너리 마스크를 선택하세요 (예: sword_shape.png - 흰색 무기 모양)"
+        class="file-input">
+    </div>
+    
+    <button 
+      (click)="onLoadImages()" 
+      [disabled]="isLoadButtonDisabled"
+      class="load-btn">
+      📂 이미지 로드
+    </button>
+  </div>
+
+  <!-- 캔버스 카드 -->
+  <div class="canvas-container">
+    <canvas 
+      #moldCanvas 
+      width="768" 
+      height="768"
+      class="mold-canvas">
+    </canvas>
+  </div>
+  
+  <!-- 진행상황 표시 -->
+  <div *ngIf="isGenerating" class="progress-indicator">
+    <div class="progress-content">
+      <div class="loading-spinner"></div>
+      <p>{{ generationProgress }}</p>
+    </div>
+  </div>
+  
+  <!-- 결과 이미지 표시 -->
+  <div *ngIf="resultImageUrl && !isGenerating" class="result-container">
+    <h3>🎉 주조 완료!</h3>
+    <div class="result-image-container">
+      <img [src]="resultImageUrl" alt="생성된 무기" class="result-image">
+    </div>
+    <div class="result-actions">
+      <button (click)="downloadWeaponImage()" class="download-btn">
+        💾 이미지 저장
+      </button>
+      <button (click)="generate3DModel()" class="generate-3d-btn" [disabled]="isGenerating3D">
+        🏗️ 3D 모델 생성
+      </button>
+      <button (click)="resetForging()" class="reset-btn">
+        🔄 다시 주조하기
+      </button>
+    </div>
+  </div>
+  
+  <!-- 3D 모델 생성 진행상황 -->
+  <div *ngIf="isGenerating3D" class="progress-indicator model-3d-progress">
+    <div class="progress-content">
+      <div class="loading-spinner"></div>
+      <p>{{ model3DProgress }}</p>
+      <small>⏰ 3D 모델 생성은 1-3분 정도 소요됩니다</small>
+    </div>
+  </div>
+
+  <!-- 3D 모델 결과 -->
+  <div *ngIf="model3DUrl && !isGenerating3D" class="model-3d-result">
+    <h3>🎯 3D 모델 생성 완료!</h3>
+    <div class="model-info">
+      <div class="info-item">
+        <span class="info-label">⏱️ 처리 시간:</span>
+        <span class="info-value">{{ model3DProcessingTime }}</span>
+      </div>
+      <div class="info-item">
+        <span class="info-label">📦 파일 크기:</span>
+        <span class="info-value">{{ model3DFileSize }}</span>
+      </div>
+    </div>
+    <div class="model-actions">
+      <button (click)="download3DModel()" class="download-3d-btn">
+        📁 GLB 파일 다운로드
+      </button>
+      <button (click)="show3DModel()" class="view-3d-btn">
+        👁️ 3D 모델 보기
+      </button>
+      <button (click)="resetAll()" class="reset-all-btn">
+        🔄 전체 초기화
+      </button>
+    </div>
+    <div class="model-preview-info">
+      <p>💡 GLB 파일을 다운로드하여 3D 뷰어나 게임 엔진에서 확인할 수 있습니다!</p>
+    </div>
+  </div>
+  
+  <!-- 3D 모델 뷰어 모달 -->
+  <div *ngIf="show3DViewer" class="model-3d-viewer-modal">
+    <div class="modal-backdrop" (click)="close3DViewer()"></div>
+    <div class="model-3d-viewer-content">
+      <div class="viewer-header">
+        <h3>🎯 3D 무기 모델 뷰어</h3>
+        <button (click)="close3DViewer()" class="close-btn">✕</button>
+      </div>
+      
+      <div class="viewer-container">
+        <div #model3DViewer class="three-js-container"></div>
+        <div class="viewer-controls">
+          <p>🖱️ 마우스로 회전, 확대/축소 가능</p>
+          <p>🔄 자동 회전 활성화됨</p>
+        </div>
+      </div>
+      
+      <div class="viewer-footer">
+        <button (click)="download3DModel()" class="download-in-viewer-btn">
+          💾 GLB 파일 다운로드
+        </button>
+        <button (click)="close3DViewer()" class="close-viewer-btn">
+          ❌ 뷰어 닫기
+        </button>
+      </div>
+    </div>
+  </div>
+  
+  <button 
+    (click)="onStartPour()" 
+    [disabled]="isStartButtonDisabled"
+    class="start-btn">
+    🔥 주조 시작하기
+  </button>
+  
+  <small *ngIf="errorMessage" class="error-message">
+    ⚠️ {{ errorMessage }}
+  </small>
+</div>

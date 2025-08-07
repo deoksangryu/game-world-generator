@@ -1,0 +1,10 @@
+.npc-toolbar { display:flex; gap:10px; margin-bottom:15px; }
+.filter-select, .search-input { padding:6px 10px; border-radius:6px; border:1px solid rgba(255,255,255,0.3); background:rgba(255,255,255,0.1); color:#fff; }
+.search-input{ flex:1; }
+
+.npc-grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:15px; }
+.npc-card{ background:rgba(0,0,0,0.3); border-radius:12px; padding:12px; cursor:pointer; transition:all .3s ease; border:1px solid transparent; }
+.npc-card:hover{ transform:translateY(-4px); border-color:#fbbf24; }
+.npc-header{ font-size:2rem; text-align:center; margin-bottom:10px; }
+.npc-name{ font-weight:bold; color:#fbbf24; margin-bottom:6px; }
+.npc-personality{ font-size:0.85rem; color:#e5e7eb; } 

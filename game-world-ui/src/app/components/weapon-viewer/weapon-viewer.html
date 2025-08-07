@@ -1,0 +1,83 @@
+<!-- 
+====================================
+무기 뷰어 컴포넌트 템플릿
+====================================
+NPC가 제작한 무기의 상세 정보를 3D 모델과 함께 표시하는 컴포넌트입니다.
+
+주요 구성:
+1. 무기 헤더 - 이름과 희귀도 표시
+2. 3D 뷰어 - Three.js 기반 인터랙티브 3D 모델
+3. 무기 스탯 - 공격력, 내구도 등 게임 수치
+4. 제작 재료 - 무기 제작에 사용된 재료 목록
+5. 마법 부여 - 적용된 인챈트 효과들
+6. 무기 설명 - 상세 설명 텍스트
+-->
+
+<div class="weapon-viewer-container">
+  <!-- ==================== 무기 헤더 (이름/희귀도) ==================== -->
+  <div class="weapon-header">
+    <!-- 무기 이름 -->
+    <h4 class="weapon-name">{{ weapon.name }}</h4>
+    <!-- 희귀도 배지 (색상은 등급에 따라 동적 변경) -->
+    <span class="weapon-rarity" [style.color]="getRarityColor(weapon.rarity)">
+      {{ getRarityText(weapon.rarity) }}
+    </span>
+  </div>
+
+  <!-- ==================== 3D 뷰어 영역 ==================== -->
+  <!-- Three.js로 렌더링되는 인터랙티브 3D 무기 모델 -->
+  <div class="weapon-3d-viewer">
+    <!-- Three.js 캔버스 (TypeScript에서 제어) -->
+    <canvas #canvas class="weapon-canvas"></canvas>
+    <!-- 사용자 조작 가이드 -->
+    <div class="viewer-controls">
+      <span class="control-hint">🖱️ 드래그하여 회전 • 휠로 확대/축소</span>
+    </div>
+  </div>
+
+  <!-- ==================== 무기 스탯 정보 ==================== -->
+  <div class="weapon-stats">
+    <!-- 무기 종류 -->
+    <div class="stat-row">
+      <span class="stat-label">종류:</span>
+      <span class="stat-value">{{ weapon.weaponType }}</span>
+    </div>
+    <!-- 공격력 수치 -->
+    <div class="stat-row">
+      <span class="stat-label">공격력:</span>
+      <span class="stat-value damage">{{ weapon.damage }}</span>
+    </div>
+    <!-- 내구도 수치 -->
+    <div class="stat-row">
+      <span class="stat-label">내구도:</span>
+      <span class="stat-value durability">{{ weapon.durability }}</span>
+    </div>
+  </div>
+
+  <!-- ==================== 제작 재료 섹션 ==================== -->
+  <!-- 무기 제작에 사용된 재료들을 태그 형태로 표시 -->
+  <div class="weapon-materials" *ngIf="weapon.materials.length > 0">
+    <h5>제작 재료</h5>
+    <div class="materials-list">
+      <span *ngFor="let material of weapon.materials" class="material-tag">
+        {{ material }}
+      </span>
+    </div>
+  </div>
+
+  <!-- ==================== 마법 부여 섹션 ==================== -->
+  <!-- 무기에 적용된 인챈트 효과들을 표시 (있는 경우에만) -->
+  <div class="weapon-enchantments" *ngIf="weapon.enchantments && weapon.enchantments.length > 0">
+    <h5>마법 부여</h5>
+    <div class="enchantments-list">
+      <span *ngFor="let enchantment of weapon.enchantments" class="enchantment-tag">
+        ✨ {{ enchantment }}
+      </span>
+    </div>
+  </div>
+
+  <!-- ==================== 무기 상세 설명 ==================== -->
+  <div class="weapon-description">
+    <p>{{ weapon.description }}</p>
+  </div>
+</div> 

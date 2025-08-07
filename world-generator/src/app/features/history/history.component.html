@@ -1,0 +1,40 @@
+<section class="panel">
+  <h2 class="section-title">📜 세계 역사</h2>
+
+  <div *ngIf="eras.length === 0" class="empty-state">
+    <div class="empty-icon">📜</div>
+    <p>세계관을 생성하면 자동으로 역사가 표시됩니다.</p>
+    <button class="action-btn" (click)="loadSampleHistory()">📚 샘플 역사 불러오기</button>
+  </div>
+
+  <div class="timeline" *ngIf="eras.length > 0">
+    <div *ngFor="let era of eras; let i = index" class="era-item" [class.alternate]="i % 2 === 1">
+      <div class="era-marker">
+        <div class="era-number">{{ i + 1 }}</div>
+        <div class="era-type-badge" [class]="'type-' + era.type">{{ getTypeIcon(era.type) }}</div>
+      </div>
+      
+      <div class="era-content">
+        <div class="era-header">
+          <h3 class="era-title">{{ era.title }}</h3>
+          <span class="era-date">{{ era.date }}</span>
+        </div>
+        
+        <div class="era-description">{{ era.description }}</div>
+        
+        <div class="era-tags" *ngIf="era.tags && era.tags.length > 0">
+          <span class="tag" *ngFor="let tag of era.tags">{{ tag }}</span>
+        </div>
+        
+        <div class="era-related" *ngIf="hasRelatedContent(era)">
+          <div class="related-section" *ngIf="era.related.npcs && era.related.npcs.length > 0">
+            <strong>관련 NPC:</strong> {{ era.related.npcs.join(', ') }}
+          </div>
+          <div class="related-section" *ngIf="era.related.monsters && era.related.monsters.length > 0">
+            <strong>관련 몬스터:</strong> {{ era.related.monsters.join(', ') }}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section> 

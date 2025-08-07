@@ -1,0 +1,83 @@
+<section class="panel">
+  <h2 class="section-title">🎨 세계관 작성
+    <div class="header-actions">
+      <span class="server-status" [class.connected]="serverConnected" [class.disconnected]="!serverConnected">
+        {{ serverConnected ? '🟢 서버 연결됨' : '🔴 서버 연결 안됨' }}
+      </span>
+      <button type="button" class="sample-btn action-btn" (click)="loadSample()">🔍 샘플 불러오기</button>
+      <button type="button" class="clear-btn action-btn" (click)="clearData()" *ngIf="generatedWorld">🗑️ 초기화</button>
+    </div>
+  </h2>
+
+  <!-- 상태 메시지 -->
+  <div class="status-messages">
+    <div class="error-message" *ngIf="errorMessage">❌ {{ errorMessage }}</div>
+    <div class="success-message" *ngIf="successMessage">✅ {{ successMessage }}</div>
+  </div>
+
+  <!-- Form -->
+  <form *ngIf="!generatedWorld" (ngSubmit)="generateWorld()" class="world-form">
+    <div class="form-group">
+      <label class="form-label">장르 선택</label>
+      <div class="genre-grid">
+        <div class="genre-card" *ngFor="let g of genres" [class.selected]="worldData.genre===g.value" (click)="selectGenre(g.value)">
+          <div class="genre-icon">{{ g.icon }}</div>
+          <div class="genre-name">{{ g.label }}</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">게임 제목 *</label>
+      <input class="form-input" [(ngModel)]="worldData.gameTitle" name="title" placeholder="게임 제목을 입력하세요" required />
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">기본 설정 *</label>
+      <textarea class="form-input textarea" rows="3" [(ngModel)]="worldData.basicSetting" name="basicSetting" placeholder="게임의 배경과 설정을 입력하세요" required></textarea>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">주요 갈등</label>
+      <textarea class="form-input textarea" rows="3" [(ngModel)]="worldData.mainConflict" name="mainConflict" placeholder="세계의 주요 갈등이나 문제를 입력하세요"></textarea>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">특별한 요소</label>
+      <textarea class="form-input textarea" rows="3" [(ngModel)]="worldData.uniqueElements" name="uniqueElements" placeholder="독특한 설정이나 마법 시스템 등을 입력하세요"></textarea>
+    </div>
+
+    <div class="button-group">
+      <button type="submit" class="generate-btn primary" [disabled]="isGenerating || !serverConnected">
+        <span *ngIf="!isGenerating">🎨 세계관 생성</span>
+        <span *ngIf="isGenerating"><span class="spinner"></span> 생성 중...</span>
+      </button>
+
+      <button type="button" class="generate-btn full" (click)="generateFullWorld()" [disabled]="isGenerating || !serverConnected">
+        <span *ngIf="!isGenerating">✨ 통합 생성 (이미지 포함)</span>
+        <span *ngIf="isGenerating"><span class="spinner"></span> 통합 생성 중...</span>
+      </button>
+    </div>
+
+    <p class="form-note">* 필수 항목</p>
+  </form>
+
+  <!-- Preview -->
+  <div *ngIf="generatedWorld" class="preview-box">
+    <h3 class="preview-title">🌍 {{ generatedWorld.theme }}</h3>
+    <div class="preview-content">
+      <div class="preview-setting">
+        <strong>📍 배경:</strong> {{ generatedWorld.setting }}
+      </div>
+      <div class="preview-description">
+        <strong>📖 세계관 설명:</strong>
+        <p>{{ generatedWorld.expandedWorldDescription }}</p>
+      </div>
+    </div>
+
+    <div class="preview-actions">
+      <button class="action-btn secondary" (click)="clearData()">🔄 다시 생성</button>
+      <button class="action-btn primary" (click)="checkServerConnection()">🔄 서버 상태 새로고침</button>
+    </div>
+  </div>
+</section> 

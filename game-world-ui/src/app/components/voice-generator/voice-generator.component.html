@@ -1,0 +1,368 @@
+<div class="voice-generator">
+  <!-- 헤더 섹션 -->
+  <div class="header-section">
+    <h3>🎤 음성 생성기</h3>
+    <div class="npc-context" *ngIf="currentSelectedNPC">
+      <span class="npc-info">
+        <strong>{{ currentSelectedNPC.name }}</strong> ({{ currentSelectedNPC.role }})
+      </span>
+    </div>
+    <div class="npc-context" *ngIf="!currentSelectedNPC && npcName">
+      <span class="npc-info">
+        <strong>{{ npcName }}</strong> ({{ npcRole }})
+      </span>
+    </div>
+  </div>
+
+  <!-- 서버 상태 섹션 -->
+  <div class="server-status" [ngClass]="{'healthy': isServerHealthy, 'unhealthy': !isServerHealthy}">
+    <div class="status-indicator">
+      <span class="status-dot" [ngClass]="{'green': isServerHealthy, 'red': !isServerHealthy}"></span>
+      <span class="status-text">{{ serverStatusText }}</span>
+    </div>
+    <div class="status-actions">
+      <button 
+        class="refresh-btn" 
+        (click)="refreshServerStatus()" 
+        [disabled]="isLoadingActors"
+        title="서버 상태 새로고침">
+        🔄
+      </button>
+      <button 
+        class="test-btn" 
+        (click)="testServerConnection()" 
+        title="서버 연결 테스트">
+        🌐
+      </button>
+      <button 
+        class="test-btn" 
+        (click)="testSampleUrls()" 
+        title="샘플 URL 테스트">
+        🧪
+      </button>
+    </div>
+  </div>
+
+  <!-- 에러/성공 메시지 -->
+  <div class="message-section" *ngIf="errorMessage || successMessage">
+    <div class="error-message" *ngIf="errorMessage" (click)="clearMessages()">
+      ⚠️ {{ errorMessage }}
+    </div>
+    <div class="success-message" *ngIf="successMessage" (click)="clearMessages()">
+      ✅ {{ successMessage }}
+    </div>
+  </div>
+
+  <!-- NPC 선택 섹션 -->
+  <div class="npc-selection" *ngIf="hasNPCProfiles && isServerHealthy">
+    <h4>🧙‍♂️ NPC 선택</h4>
+    
+    <div class="current-npc" *ngIf="currentSelectedNPC">
+      <div class="selected-npc-info">
+        <span class="npc-name">{{ currentSelectedNPC.name }}</span>
+        <span class="npc-role">({{ currentSelectedNPC.role }})</span>
+        <button class="clear-npc-btn" (click)="clearNPCSelection()" title="NPC 선택 해제">
+          ❌
+        </button>
+      </div>
+    </div>
+
+    <div class="npcs-grid" *ngIf="!currentSelectedNPC">
+      <div 
+        class="npc-card" 
+        *ngFor="let npc of filteredNPCProfiles"
+        (click)="onNPCSelect(npc)">
+        
+        <div class="npc-info">
+          <div class="npc-name">{{ npc.name }}</div>
+          <div class="npc-details">
+            <span class="npc-role">{{ npc.role }}</span>
+          </div>
+          <div class="npc-description" *ngIf="npc.description">
+            {{ npc.description }}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="no-npcs" *ngIf="!hasNPCProfiles">
+      <p>월드를 먼저 생성하여 NPC를 만들어주세요.</p>
+    </div>
+  </div>
+
+  <!-- 음성 배우 선택 섹션 -->
+  <div class="actor-selection" *ngIf="isServerHealthy">
+    <h4>음성 배우 선택</h4>
+    
+    <div class="loading-indicator" *ngIf="isLoadingActors">
+      <span class="spinner">⏳</span> 음성 배우 목록을 불러오는 중...
+    </div>
+
+    <div class="actors-grid" *ngIf="!isLoadingActors && voiceActors.length > 0">
+      <div 
+        class="actor-card" 
+        *ngFor="let actor of voiceActors"
+        [ngClass]="{'selected': selectedActor?.id === actor.id}"
+        (click)="onActorSelect(actor)">
+        
+        <div class="actor-info">
+          <div class="actor-name">{{ actor.name }}</div>
+          <div class="actor-details">
+            <span class="gender" [ngClass]="actor.gender">
+              {{ actor.gender === 'male' ? '👨' : '👩' }}
+              {{ actor.gender === 'male' ? '남성' : '여성' }}
+            </span>
+            <span class="file-count" *ngIf="actor.file_count">
+              📁 {{ actor.file_count }}개 파일
+            </span>
+          </div>
+          <div class="actor-description" *ngIf="actor.description">
+            {{ actor.description }}
+          </div>
+
+          <!-- 샘플 재생 버튼 -->
+          <div class="sample-controls">
+            <button 
+              class="sample-btn"
+              [ngClass]="{'playing': isSamplePlaying(actor.id)}"
+              (click)="playSample(actor); $event.stopPropagation()"
+              title="샘플 음성 재생/정지">
+              <span *ngIf="!isSamplePlaying(actor.id)">🎵 샘플 재생</span>
+              <span *ngIf="isSamplePlaying(actor.id)">⏹️ 재생 중지</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="selection-indicator" *ngIf="selectedActor?.id === actor.id">
+          ✓
+        </div>
+      </div>
+    </div>
+
+    <div class="no-actors" *ngIf="!isLoadingActors && voiceActors.length === 0">
+      <p>사용 가능한 음성 배우가 없습니다.</p>
+      <button class="refresh-actors-btn" (click)="refreshActors()">
+        🔄 새로고침
+      </button>
+    </div>
+  </div>
+
+  <!-- 텍스트 입력 섹션 -->
+  <div class="text-input-section" *ngIf="isServerHealthy">
+    <h4>생성할 텍스트</h4>
+    <div class="input-container">
+      <textarea
+        [(ngModel)]="inputText"
+        [placeholder]="currentSelectedNPC ? 
+          currentSelectedNPC.name + '의 음성으로 변환할 텍스트를 입력하세요...' : 
+          '음성으로 변환할 텍스트를 입력하세요...'"
+        rows="4"
+        class="text-input"
+        [disabled]="isGenerating">
+      </textarea>
+      
+      <div class="input-actions">
+        <button 
+          class="test-btn" 
+          (click)="testGeneration()"
+          [disabled]="!selectedActor || isGenerating">
+          🎲 테스트 텍스트
+        </button>
+        <div class="char-count">{{ inputText.length }} 글자</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 음성 설정 섹션 -->
+  <div class="voice-settings" *ngIf="isServerHealthy && selectedActor">
+    <h4>음성 설정</h4>
+    
+    <div class="settings-grid">
+      <!-- 속도 설정 -->
+      <div class="setting-item">
+        <label>속도: {{ speedPercentage }}%</label>
+        <input 
+          type="range" 
+          min="0.5" 
+          max="2.0" 
+          step="0.1"
+          [value]="speed"
+          (input)="onSpeedChange($event)"
+          class="slider"
+          [disabled]="isGenerating">
+      </div>
+
+      <!-- 음높이 설정 -->
+      <div class="setting-item">
+        <label>음높이: {{ pitch > 0 ? '+' : '' }}{{ pitch }}</label>
+        <input 
+          type="range" 
+          min="-12" 
+          max="12" 
+          step="1"
+          [value]="pitch"
+          (input)="onPitchChange($event)"
+          class="slider"
+          [disabled]="isGenerating">
+      </div>
+
+      <!-- 감정 설정 -->
+      <div class="setting-item">
+        <label>감정</label>
+        <select 
+          [(ngModel)]="emotion" 
+          class="emotion-select"
+          [disabled]="isGenerating">
+          <option *ngFor="let option of emotionOptions" [value]="option.value">
+            {{ option.label }}
+          </option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- 음성 생성 섹션 -->
+  <div class="generation-section" *ngIf="isServerHealthy">
+    <button 
+      class="generate-btn" 
+      (click)="generateVoice()"
+      [disabled]="!canGenerate"
+      [ngClass]="{'generating': isGenerating}">
+      
+      <span *ngIf="!isGenerating">🎵 음성 생성</span>
+      <span *ngIf="isGenerating">
+        <span class="spinner">⏳</span> 생성 중...
+      </span>
+    </button>
+
+    <div class="generation-info" *ngIf="selectedActor && inputText.trim()">
+      <div class="selected-actor">
+        선택된 배우: <strong>{{ selectedActor.name }}</strong>
+      </div>
+      <div class="text-preview">
+        "{{ inputText.slice(0, 50) }}{{ inputText.length > 50 ? '...' : '' }}"
+      </div>
+    </div>
+  </div>
+
+  <!-- 생성된 오디오 섹션 -->
+  <div class="audio-section" *ngIf="hasAudio">
+    <h4>생성된 음성</h4>
+    
+    <div class="audio-player">
+      <audio 
+        [src]="generatedAudioUrl" 
+        controls 
+        class="audio-element"
+        (loadedmetadata)="onAudioLoadedMetadata($event)"
+        (error)="onAudioError($event)"
+        (ended)="onAudioEnded($event)"
+        preload="auto">
+        브라우저가 오디오를 지원하지 않습니다.
+      </audio>
+      
+      <div class="audio-controls">
+        <button 
+          class="play-btn" 
+          (click)="playAudio()"
+          title="재생">
+          ▶️ 재생
+        </button>
+        
+        <button 
+          class="pause-btn" 
+          (click)="pauseAudio()"
+          title="일시정지">
+          ⏸️ 일시정지
+        </button>
+        
+        <button 
+          class="download-btn" 
+          (click)="downloadAudio()"
+          title="음성 파일 다운로드">
+          📥 다운로드
+        </button>
+        
+        <button 
+          class="test-url-btn" 
+          (click)="testAudioUrl()"
+          title="오디오 URL 테스트">
+          🔍 URL 테스트
+        </button>
+        
+        <button 
+          class="debug-btn" 
+          (click)="debugAudioGeneration()"
+          title="디버깅 정보 출력">
+          🐛 디버깅
+        </button>
+        
+        <button 
+          class="force-play-btn" 
+          (click)="forcePlayAudio()"
+          title="강제 재생 (자동재생 정책 우회)">
+          🎵 강제재생
+        </button>
+      </div>
+    </div>
+
+    <div class="audio-info">
+      <span class="actor-used">
+        음성 배우: {{ selectedActor?.name }}
+      </span>
+      <span class="generation-time" *ngIf="successMessage">
+        {{ successMessage }}
+      </span>
+    </div>
+  </div>
+
+  <!-- 서버 연결 불가 시 안내 -->
+  <div class="server-unavailable" *ngIf="!isServerHealthy">
+    <div class="unavailable-content">
+      <h4>🔌 음성 서버 연결 불가</h4>
+      <p>음성 생성 서버에 연결할 수 없습니다.</p>
+      
+      <div class="troubleshooting">
+        <h5>문제 해결 방법:</h5>
+        <ol>
+          <li>음성 서버가 실행 중인지 확인해주세요</li>
+          <li>서버 포트(5001)가 차단되지 않았는지 확인해주세요</li>
+          <li>잠시 후 다시 시도해주세요</li>
+        </ol>
+      </div>
+
+      <button 
+        class="retry-btn" 
+        (click)="refreshServerStatus()">
+        🔄 다시 연결 시도
+      </button>
+    </div>
+  </div>
+
+  <!-- 도움말 섹션 -->
+  <div class="help-section" *ngIf="isServerHealthy">
+    <details class="help-details">
+      <summary>📖 사용 방법</summary>
+      <div class="help-content">
+        <ol>
+          <li><strong>음성 배우 선택:</strong> 원하는 음성의 배우를 클릭하세요</li>
+          <li><strong>텍스트 입력:</strong> 음성으로 변환할 텍스트를 입력하세요</li>
+          <li><strong>설정 조정:</strong> 속도, 음높이, 감정을 조정하세요</li>
+          <li><strong>음성 생성:</strong> "음성 생성" 버튼을 클릭하세요</li>
+          <li><strong>재생/다운로드:</strong> 생성된 음성을 재생하거나 다운로드하세요</li>
+        </ol>
+        
+        <div class="tips">
+          <h6>💡 팁:</h6>
+          <ul>
+            <li>NPC에 맞는 배우가 자동으로 선택됩니다</li>
+            <li>각 배우 카드의 "샘플 재생" 버튼으로 음성을 미리 들어볼 수 있습니다</li>
+            <li>테스트 텍스트로 빠르게 시험해볼 수 있습니다</li>
+            <li>속도는 50%~200%, 음높이는 ±12 반음까지 조절 가능합니다</li>
+            <li>생성된 음성은 WAV 형식으로 다운로드됩니다</li>
+          </ul>
+        </div>
+      </div>
+    </details>
+  </div>
+</div> 

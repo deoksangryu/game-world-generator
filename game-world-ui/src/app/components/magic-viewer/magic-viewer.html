@@ -1,0 +1,123 @@
+<!-- 
+====================================
+마법 뷰어 컴포넌트 템플릿
+====================================
+NPC가 연구한 마법의 상세 정보를 표시하는 컴포넌트입니다.
+
+주요 구성:
+1. 마법 헤더 - 이름, 종류, 학파, 레벨 배지
+2. 마법 스탯 - 마나 소모, 시전 시간, 지속 시간, 사거리
+3. 마법 설명 - 스토리 및 배경 설명
+4. 마법 효과 - 실제 게임에서의 효과들과 수치
+5. 구성 요소 - 마법 시전에 필요한 재료들
+6. 시각 효과 - CSS 애니메이션으로 구현한 마법진
+-->
+
+<div class="magic-viewer-container">
+  <!-- ==================== 마법 헤더 (이름/배지) ==================== -->
+  <div class="magic-header">
+    <!-- 마법 이름 -->
+    <h4 class="magic-name">{{ magic.name }}</h4>
+    <!-- 마법 분류 배지들 -->
+    <div class="magic-badges">
+      <!-- 마법 종류 배지 (공격, 방어, 지원 등) -->
+      <span class="magic-type" [style.background-color]="getMagicTypeColor(magic.magicType)">
+        {{ getMagicTypeText(magic.magicType) }}
+      </span>
+      <!-- 마법 학파 배지 -->
+      <span class="magic-school" [style.background-color]="getSchoolColor(magic.school)">
+        {{ magic.school }}
+      </span>
+      <!-- 마법 레벨 배지 -->
+      <span class="magic-level" [style.background-color]="getLevelColor(magic.level)">
+        {{ getLevelText(magic.level) }} {{ magic.level }}레벨
+      </span>
+    </div>
+  </div>
+
+  <!-- ==================== 마법 스탯 정보 ==================== -->
+  <div class="magic-stats">
+    <div class="stat-grid">
+      <!-- 마나 소모량 (색상으로 높낮이 표시) -->
+      <div class="stat-item">
+        <span class="stat-label">마나 소모:</span>
+        <span class="stat-value mana" [style.color]="getManaCostColor(magic.manaCost)">
+          {{ magic.manaCost }}
+        </span>
+      </div>
+      <!-- 시전 시간 -->
+      <div class="stat-item">
+        <span class="stat-label">시전 시간:</span>
+        <span class="stat-value">{{ magic.castingTime }}</span>
+      </div>
+      <!-- 지속 시간 -->
+      <div class="stat-item">
+        <span class="stat-label">지속 시간:</span>
+        <span class="stat-value">{{ formatDuration(magic.duration) }}</span>
+      </div>
+      <!-- 사거리 -->
+      <div class="stat-item">
+        <span class="stat-label">사거리:</span>
+        <span class="stat-value">{{ magic.range }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== 마법 설명 ==================== -->
+  <div class="magic-description">
+    <p>{{ magic.description }}</p>
+  </div>
+
+  <!-- ==================== 마법 효과 목록 ==================== -->
+  <div class="magic-effects">
+    <h5>✨ 효과</h5>
+    <div class="effects-list">
+      <!-- 개별 마법 효과 -->
+      <div *ngFor="let effect of magic.effects" class="effect-item">
+        <!-- 효과 헤더 (아이콘, 종류, 수치) -->
+        <div class="effect-header">
+          <!-- 효과 종류 아이콘 -->
+          <span class="effect-icon">{{ getEffectTypeIcon(effect.type) }}</span>
+          <!-- 효과 종류 (색상으로 구분) -->
+          <span class="effect-type" [style.color]="getEffectTypeColor(effect.type)">
+            {{ getEffectTypeText(effect.type) }}
+          </span>
+          <!-- 효과 수치 -->
+          <span class="effect-value">{{ effect.value }}</span>
+          <!-- 효과 지속 시간 (있는 경우) -->
+          <span *ngIf="effect.duration" class="effect-duration">
+            ({{ effect.duration }}초)
+          </span>
+        </div>
+        <!-- 효과 상세 설명 -->
+        <div class="effect-description">
+          {{ effect.description }}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== 마법 구성 요소 (있는 경우에만) ==================== -->
+  <div class="magic-components" *ngIf="magic.components.length > 0">
+    <h5>🧪 구성 요소</h5>
+    <div class="components-list">
+      <!-- 개별 구성 요소 태그 -->
+      <span *ngFor="let component of magic.components" class="component-tag">
+        {{ component }}
+      </span>
+    </div>
+  </div>
+
+  <!-- ==================== 마법진 시각 효과 ==================== -->
+  <!-- CSS 애니메이션으로 구현된 마법진 디자인 -->
+  <div class="magic-visual-effect">
+    <div class="spell-circle">
+      <!-- 3중 원형 구조 -->
+      <div class="circle-outer"></div>
+      <div class="circle-middle"></div>
+      <div class="circle-inner"></div>
+      <!-- 학파 첫 글자 심볼 -->
+      <div class="magic-symbol">{{ magic.school.charAt(0) }}</div>
+    </div>
+  </div>
+</div> 

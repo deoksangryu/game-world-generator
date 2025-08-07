@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<div class="app-container">
+  
+  <!-- 좌측 사이드바 네비게이션 -->
+  <aside class="sidebar">
+    
+    <!-- 브랜드 헤더 -->
+    <div class="sidebar-header">
+      <div class="brand">
+        <div class="brand-icon">🎮</div>
+        <div class="brand-text">
+          <h3>게임 월드 스튜디오</h3>
+          <p>AI Game World Generator</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 서버 상태 -->
+    <div class="server-status">
+      <div class="status-indicator" [ngClass]="serverConnected ? 'connected' : 'disconnected'">
+        <span class="status-dot"></span>
+        <span class="status-text">{{ serverConnected ? '서버 연결됨' : '서버 연결 끊김' }}</span>
+      </div>
+    </div>
+
+    <!-- 네비게이션 메뉴 -->
+    <nav class="sidebar-nav">
+      
+      <!-- 월드 생성 -->
+      <div class="nav-section">
+        <div class="nav-item" 
+             [class.active]="activeTab === 'world-gen'"
+             (click)="setActiveTab('world-gen')">
+          <div class="nav-icon">🌍</div>
+          <div class="nav-content">
+            <div class="nav-title">월드 생성</div>
+            <div class="nav-desc">게임 세계관 제작</div>
+          </div>
+          <div class="nav-badge" *ngIf="currentWorld">✓</div>
+        </div>
+      </div>
+
+      <!-- NPC & 캐릭터 -->
+      <div class="nav-section">
+        <div class="section-title">캐릭터 관리</div>
+        
+        <div class="nav-item" 
+             [class.active]="activeTab === 'npcs'"
+             [class.disabled]="!currentWorld"
+             (click)="setActiveTab('npcs')">
+          <div class="nav-icon">👥</div>
+          <div class="nav-content">
+            <div class="nav-title">NPC 관리</div>
+            <div class="nav-desc">캐릭터 생성 및 설정</div>
+          </div>
+          <div class="nav-badge" *ngIf="npcProfiles.length > 0">
+            {{ npcProfiles.length }}
+          </div>
+        </div>
+
+        <div class="nav-item" 
+             [class.active]="activeTab === 'chat'"
+             [class.disabled]="!selectedNPC"
+             (click)="setActiveTab('chat')">
+          <div class="nav-icon">💬</div>
+          <div class="nav-content">
+            <div class="nav-title">NPC 대화</div>
+            <div class="nav-desc">캐릭터와 상호작용</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 시스템 & 도구 -->
+      <div class="nav-section">
+        <div class="section-title">시스템 & 도구</div>
+        
+        <div class="nav-item" 
+             [class.active]="activeTab === 'voice'"
+             (click)="setActiveTab('voice')">
+          <div class="nav-icon">🎤</div>
+          <div class="nav-content">
+            <div class="nav-title">음성 시스템</div>
+            <div class="nav-desc">TTS 및 음성 매핑</div>
+          </div>
+        </div>
+
+        <div class="nav-item" 
+             [class.active]="activeTab === 'weapons'"
+             [class.disabled]="!currentWorld"
+             (click)="setActiveTab('weapons')">
+          <div class="nav-icon">⚔️</div>
+          <div class="nav-content">
+            <div class="nav-title">무기 제작</div>
+            <div class="nav-desc">무기 및 장비 생성</div>
+          </div>
+        </div>
+
+        <div class="nav-item" 
+             [class.active]="activeTab === 'quests'"
+             [class.disabled]="!currentWorld"
+             (click)="setActiveTab('quests')">
+          <div class="nav-icon">🗡️</div>
+          <div class="nav-content">
+            <div class="nav-title">퀘스트</div>
+            <div class="nav-desc">미션 및 임무 관리</div>
+          </div>
+        </div>
+
+        <div class="nav-item" 
+             [class.active]="activeTab === 'magic'"
+             [class.disabled]="!currentWorld"
+             (click)="setActiveTab('magic')">
+          <div class="nav-icon">✨</div>
+          <div class="nav-content">
+            <div class="nav-title">마법</div>
+            <div class="nav-desc">마법 시스템 관리</div>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <!-- 하단 액션 -->
+    <div class="sidebar-footer">
+      <div class="footer-actions">
+        <button class="action-btn save" (click)="openSaveModal()">
+          <span class="btn-icon">💾</span>
+          <span class="btn-text">저장</span>
+        </button>
+        <button class="action-btn load" (click)="openLoadModal()">
+          <span class="btn-icon">📁</span>
+          <span class="btn-text">불러오기</span>
+        </button>
+      </div>
+      
+      <div class="version-info">
+        <div class="version">Ver 2.0</div>
+        <div class="credits">Built with Angular & FastAPI</div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- 메인 콘텐츠 영역 -->
+  <main class="main-content">
+    
+    <!-- 페이지 헤더 -->
+    <header class="page-header">
+      <div class="page-title">
+        <h1>{{ getPageTitle() }}</h1>
+        <p class="page-subtitle">{{ getPageSubtitle() }}</p>
+      </div>
+      
+      <!-- 상태 인디케이터 -->
+      <div class="page-status">
+        <div class="status-item" *ngIf="isGeneratingWorld">
+          <span class="spinner"></span>
+          <span>세계관 생성 중...</span>
+        </div>
+        <div class="status-item" *ngIf="isGeneratingNPCs">
+          <span class="spinner"></span>
+          <span>NPC 생성 중...</span>
+        </div>
+        <div class="status-item" *ngIf="isGeneratingImages">
+          <span class="spinner"></span>
+          <span>이미지 생성 중...</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- 콘텐츠 영역 -->
+    <div class="content-area">
+      
+      <!-- 월드 생성 -->
+      <div class="tab-content" [style.display]="activeTab === 'world-gen' ? 'block' : 'none'">
+        <div class="world-generation-layout">
+          <div class="input-section">
+            <app-world-input 
+              [isLoading]="isGeneratingWorld" 
+              [serverConnected]="serverConnected"
+              (worldCreated)="onWorldCreated($event)"
+              (fullWorldCreated)="onFullWorldCreated($event)">
+            </app-world-input>
+          </div>
+          
+          <div class="output-section" *ngIf="currentWorld">
+            <app-world-display [gameWorld]="currentWorld"></app-world-display>
+          </div>
+        </div>
+      </div>
+
+      <!-- NPC 관리 -->
+      <div class="tab-content" [style.display]="activeTab === 'npcs' ? 'block' : 'none'">
+        <div class="npcs-layout">
+          <app-npc-profiles 
+            [gameWorld]="currentWorld"
+            [npcProfiles]="npcProfiles"
+            [isGeneratingImages]="isGeneratingImages"
+            [compactMode]="true"
+            (npcSelected)="onNPCSelected($event)"
+            (generateImages)="generateAllImages()"
+            (generateSingleImage)="generateSingleNPCImage($event)"
+            (craftWeapon)="onCraftWeapon($event)"
+            (craftSpell)="onCraftSpell($event)"
+            (assignQuest)="onAssignQuest($event)">
+          </app-npc-profiles>
+        </div>
+      </div>
+
+      <!-- NPC 대화 -->
+      <div class="tab-content" [style.display]="activeTab === 'chat' ? 'block' : 'none'">
+        <div class="chat-layout">
+          <app-chat-interface 
+            [selectedNPC]="selectedNPC"
+            [npcProfiles]="npcProfiles"
+            (messageSent)="onMessageSent($event)"
+            (questAccepted)="onQuestAccepted($event)"
+            (questRejected)="onQuestRejected($event)">
+          </app-chat-interface>
+        </div>
+      </div>
+
+      <!-- 음성 시스템 -->
+      <div class="tab-content" [style.display]="activeTab === 'voice' ? 'block' : 'none'">
+        <div class="voice-system-layout">
+          <app-voice-generator 
+            [npcProfiles]="npcProfiles"
+            [selectedNPC]="selectedNPC"
+            (voiceActorMapped)="onVoiceActorMapped($event)">
+          </app-voice-generator>
+        </div>
+      </div>
+
+      <!-- 무기 제작 -->
+      <div class="tab-content" [style.display]="activeTab === 'weapons' ? 'block' : 'none'">
+        <div class="weapons-layout">
+          <app-weapon-maker></app-weapon-maker>
+        </div>
+      </div>
+
+      <!-- 퀘스트 (개발 예정) -->
+      <div class="tab-content" [style.display]="activeTab === 'quests' ? 'block' : 'none'">
+        <div class="coming-soon">
+          <div class="coming-soon-icon">🗡️</div>
+          <h3>퀘스트 시스템</h3>
+          <p>곧 출시될 예정입니다!</p>
+        </div>
+      </div>
+
+      <!-- 마법 (개발 예정) -->
+      <div class="tab-content" [style.display]="activeTab === 'magic' ? 'block' : 'none'">
+        <div class="coming-soon">
+          <div class="coming-soon-icon">✨</div>
+          <h3>마법 시스템</h3>
+          <p>곧 출시될 예정입니다!</p>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- 저장/불러오기 모달 -->
+  <app-save-load-modal
+    *ngIf="showSaveLoadModal"
+    [mode]="saveLoadMode"
+    [savedWorlds]="savedWorlds"
+    [isLoading]="isSaveLoadLoading"
+    (close)="closeSaveLoadModal()"
+    (save)="onSaveWorld($event)"
+    (load)="onLoadWorld($event)"
+    (delete)="onDeleteWorld($event)">
+  </app-save-load-modal>
+
+</div>

@@ -1,0 +1,610 @@
+<!-- 
+====================================
+NPC 프로필 컴포넌트 템플릿
+====================================
+생성된 NPC들을 표시하고 관리하는 컴포넌트입니다.
+
+모드별 구성:
+1. 컴팩트 모드 (compactMode=true): NPC 생성 단계에서 사용
+   - 그리드 형태의 카드 레이아웃
+   - 필터링 및 검색 기능
+   - 상세 정보 모달
+   
+2. 상세 모드 (compactMode=false): 상호작용 단계에서 사용
+   - 대형 이미지와 확장 가능한 상세 정보
+   - 생산품 관리 기능
+   - 인라인 확장/축소
+
+주요 기능:
+- 역할별 필터링
+- 이름/설명 검색
+- 이미지 로딩 관리
+- 생산품 자동 생성
+- 모달 기반 상세 보기
+-->
+
+<div class="npc-profiles-container">
+  <!-- ==================== 빈 상태 (NPC 없음) ==================== -->
+  <!-- NPC가 아직 생성되지 않았을 때 표시되는 안내 메시지 -->
+  <div *ngIf="npcProfiles.length === 0" class="empty-state">
+    <h3>NPC가 아직 생성되지 않았습니다</h3>
+    <p>먼저 게임 세계관을 생성하고 NPC를 생성해주세요.</p>
+  </div>
+
+  <!-- ==================== 컴팩트 모드 (NPC 생성 단계) ==================== -->
+  <!-- 그리드 형태의 카드 레이아웃으로 NPC 목록을 표시 -->
+  <div *ngIf="npcProfiles.length > 0 && compactMode" class="npc-dashboard">
+    
+    <!-- ==================== 대시보드 헤더 (필터 및 통계) ==================== -->
+    <div class="dashboard-header">
+      <!-- 필터링 섹션 -->
+      <div class="filter-section">
+        <h3>👥 생성된 캐릭터</h3>
+        <div class="filter-controls">
+          <!-- 이름/설명 검색 입력창 -->
+          <div class="search-bar">
+            <input 
+              type="text" 
+              placeholder="캐릭터 검색..." 
+              [(ngModel)]="searchTerm"
+              class="search-input">
+            <span class="search-icon">🔍</span>
+          </div>
+          
+          <!-- 역할별 필터 버튼들 -->
+          <div class="role-filters">
+            <button 
+              *ngFor="let role of availableRoles" 
+              class="role-filter-btn"
+              [class.active]="selectedRole === role"
+              (click)="onRoleFilterChange(role)">
+              <!-- 전체가 아닌 역할에만 아이콘 표시 -->
+              <span *ngIf="role !== '전체'">{{ getRoleIcon(role) }}</span>
+              {{ role }}
+            </button>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 통계 및 액션 섹션 -->
+      <div class="stats-and-actions">
+        <!-- 통계 정보 카드들 -->
+        <div class="stats-section">
+          <!-- 필터링된 캐릭터 수 -->
+          <div class="stat-card">
+            <span class="stat-number">{{ filteredNPCs.length }}</span>
+            <span class="stat-label">캐릭터</span>
+          </div>
+          <!-- 사용 가능한 역할 수 -->
+          <div class="stat-card">
+            <span class="stat-number">{{ availableRoles.length - 1 }}</span>
+            <span class="stat-label">역할</span>
+          </div>
+          <!-- 이미지 보유 캐릭터 수 -->
+          <div class="stat-card">
+            <span class="stat-number">{{ getCharactersWithImages() }}</span>
+            <span class="stat-label">이미지 보유</span>
+          </div>
+        </div>
+
+        <!-- 액션 버튼 섹션 -->
+        <div class="action-section">
+          <!-- 전체 이미지 생성 버튼 -->
+          <button 
+            class="action-btn generate-all-btn"
+            [class.generating]="isGeneratingImages"
+            [disabled]="isGeneratingImages || getCharactersWithoutImages() === 0"
+            (click)="onGenerateAllImages()"
+            title="이미지가 없는 모든 캐릭터의 이미지를 생성합니다">
+            <span class="btn-icon" *ngIf="!isGeneratingImages">🎨</span>
+            <div class="btn-spinner" *ngIf="isGeneratingImages">
+              <div class="loading-spinner small"></div>
+            </div>
+            <span class="btn-text">
+              {{ isGeneratingImages ? '생성 중...' : '전체 이미지 생성' }}
+            </span>
+            <span class="btn-count" *ngIf="!isGeneratingImages && getCharactersWithoutImages() > 0">
+              ({{ getCharactersWithoutImages() }}개)
+            </span>
+          </button>
+
+          <!-- 캐릭터 새로고침 버튼 -->
+          <button 
+            class="action-btn refresh-btn"
+            (click)="onRefreshCharacters()"
+            title="캐릭터 목록을 새로고침합니다">
+            <span class="btn-icon">🔄</span>
+            <span class="btn-text">새로고침</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== 메인 대시보드 콘텐츠 ==================== -->
+    <div class="dashboard-main">
+      <!-- NPC 카드 그리드 섹션 -->
+      <div class="npc-grid-section">
+        <div class="npc-cards-grid">
+          <!-- 개별 NPC 카드 (필터링된 목록) -->
+          <div 
+            *ngFor="let npc of filteredNPCs; trackBy: trackByNPCId" 
+            class="npc-grid-card"
+            [class.selected]="isSelectedForDetails(npc)"
+            (click)="selectNPCForDetails(npc)">
+            
+            <!-- NPC 이미지 컨테이너 -->
+            <div class="card-image-container">
+              <!-- 실제 NPC 이미지 -->
+              <img 
+                *ngIf="npc.imageUrl" 
+                [src]="npc.imageUrl" 
+                [alt]="npc.name"
+                class="card-image">
+              <!-- 이미지가 없을 때 플레이스홀더 -->
+              <div 
+                *ngIf="!npc.imageUrl" 
+                class="card-placeholder">
+                {{ getRoleIcon(npc.role) }}
+                <!-- 이미지 생성 버튼 (생성 중이 아닐 때) -->
+                <button 
+                  *ngIf="!isGeneratingImage(npc.id)"
+                  class="generate-image-btn"
+                  (click)="$event.stopPropagation(); onGenerateSingleImage(npc)"
+                  title="이미지 생성">
+                  🎨
+                </button>
+                <!-- 이미지 생성 중 스피너 -->
+                <div 
+                  *ngIf="isGeneratingImage(npc.id)"
+                  class="generating-image-spinner"
+                  title="이미지 생성 중...">
+                  <div class="loading-spinner"></div>
+                </div>
+              </div>
+              
+              <!-- 역할 배지 (우상단) -->
+              <div class="role-badge" [style.background-color]="getRoleColor(npc.role)">
+                {{ getRoleIcon(npc.role) }}
+              </div>
+            </div>
+            
+            <!-- NPC 기본 정보 -->
+            <div class="card-info">
+              <h4 class="card-name">{{ npc.name }}</h4>
+              <span class="card-role">{{ npc.role }}</span>
+            </div>
+          </div>
+        </div>
+        
+        <!-- ==================== 검색 결과 없음 메시지 ==================== -->
+        <div *ngIf="filteredNPCs.length === 0" class="no-results">
+          <div class="no-results-content">
+            <span class="no-results-icon">😔</span>
+            <h4>검색 결과가 없습니다</h4>
+            <p>다른 검색어나 필터를 시도해보세요.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== 상세 모드 (상호작용 단계) ==================== -->
+  <!-- 대형 이미지와 확장 가능한 상세 정보를 제공하는 레이아웃 -->
+  <div *ngIf="npcProfiles.length > 0 && !compactMode" class="npc-grid">
+    <div *ngFor="let npc of npcProfiles" 
+         class="npc-card fantasy-card"
+         [class.expanded]="isNPCExpanded(npc.id)">
+      
+      <!-- ==================== NPC 대형 이미지 섹션 ==================== -->
+      <div class="npc-large-image-container">
+        <div class="image-wrapper">
+          <!-- 메인 NPC 이미지 -->
+          <img 
+            *ngIf="npc.imageUrl && !isImageLoading(npc.id)" 
+            [src]="npc.imageUrl" 
+            [alt]="npc.name"
+            class="npc-large-image"
+            (load)="onImageLoad(npc.id)"
+            (error)="onImageError(npc.id)">
+          
+          <!-- 이미지 교체 시 부드러운 전환을 위한 프리로딩 이미지 -->
+          <img 
+            *ngIf="getPreloadImageUrl(npc.id)" 
+            [src]="getPreloadImageUrl(npc.id)" 
+            [alt]="npc.name"
+            class="npc-large-image preload-image"
+            [class.fade-in]="isPreloadImageReady(npc.id)"
+            (load)="onPreloadImageReady(npc.id)"
+            (error)="onPreloadImageError(npc.id)">
+          
+          <!-- 이미지 플레이스홀더 (로딩 중 또는 이미지 없음) -->
+          <div *ngIf="!npc.imageUrl || isImageLoading(npc.id)" class="large-placeholder-avatar">
+            <div class="placeholder-icon">{{ getRoleIcon(npc.role) }}</div>
+            <!-- 이미지 로딩 스피너 -->
+            <div class="loading-overlay" *ngIf="isImageLoading(npc.id)">
+              <div class="loading-spinner"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ==================== NPC 정보 오버레이 ==================== -->
+        <!-- 이미지 위에 표시되는 기본 정보와 액션 버튼들 -->
+        <div class="npc-info-overlay">
+          <h4 class="npc-name">{{ npc.name }}</h4>
+          <span class="npc-role" [style.color]="getRoleColor(npc.role)">
+            {{ getRoleIcon(npc.role) }} {{ npc.role }}
+          </span>
+          
+          <!-- 액션 버튼들 -->
+          <div class="npc-actions">
+            <!-- 이미지 생성 버튼 (이미지가 없고 생성 중이 아닐 때) -->
+            <button *ngIf="!npc.imageUrl && !isGeneratingImage(npc.id)"
+                    class="action-button generate-button" 
+                    (click)="onGenerateSingleImage(npc)"
+                    title="이미지 생성">
+              🎨
+            </button>
+            <!-- 이미지 생성 중 표시 -->
+            <div *ngIf="!npc.imageUrl && isGeneratingImage(npc.id)"
+                 class="action-button generating"
+                 title="이미지 생성 중...">
+              <div class="loading-spinner small"></div>
+            </div>
+            <!-- 대화하기 버튼 -->
+            <button class="action-button chat-button" 
+                    (click)="onSelectNPC(npc)"
+                    title="대화하기">
+              💬
+            </button>
+            <!-- 상세 정보 확장/축소 버튼 -->
+            <button class="action-button expand-button" 
+                    (click)="toggleNPCExpansion(npc.id)"
+                    [class.expanded]="isNPCExpanded(npc.id)"
+                    title="자세히 보기">
+              {{ isNPCExpanded(npc.id) ? '🔼' : '🔽' }}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ==================== NPC 기본 설명 ==================== -->
+      <div class="npc-description">
+        <p>{{ npc.description }}</p>
+      </div>
+
+      <!-- ==================== 확장된 상세 정보 ==================== -->
+      <!-- NPC 상세 정보와 생산품을 표시하는 스크롤 가능한 영역 -->
+      <div *ngIf="isNPCExpanded(npc.id)" class="npc-details-container">
+        <div class="npc-details-scroll">
+          <!-- NPC 배경 -->
+          <div class="detail-section">
+            <h5>📖 배경</h5>
+            <p>{{ npc.background }}</p>
+          </div>
+
+          <!-- NPC 성격 -->
+          <div class="detail-section">
+            <h5>🎭 성격</h5>
+            <p>{{ npc.personality }}</p>
+          </div>
+
+          <!-- NPC 외모 -->
+          <div class="detail-section">
+            <h5>👤 외모</h5>
+            <p>{{ npc.appearance }}</p>
+          </div>
+
+          <!-- ==================== NPC 생산품 섹션 ==================== -->
+          <div class="products-section">
+            <h5>{{ getProductsTitle(npc) }}</h5>
+            
+            <!-- 생산품 로딩 상태 -->
+            <div *ngIf="isLoadingProducts(npc.id)" class="loading-products">
+              <div class="loading-spinner"></div>
+              <span>생산품 생성 중...</span>
+            </div>
+
+            <!-- 무기 섹션 (대장장이 등) -->
+            <div *ngIf="hasWeapons(npc)" class="weapons-section">
+              <h6>⚔️ 제작된 무기</h6>
+              <app-weapon-viewer 
+                *ngFor="let weapon of getWeapons(npc)" 
+                [weapon]="weapon">
+              </app-weapon-viewer>
+            </div>
+
+            <!-- 퀘스트 (모든 NPC 가능) -->
+            <div *ngIf="hasQuests(npc)" class="quests-section">
+              <h6>📋 제공 가능한 퀘스트</h6>
+              <app-quest-viewer 
+                *ngFor="let quest of getQuests(npc)" 
+                [quest]="quest">
+              </app-quest-viewer>
+            </div>
+
+            <!-- 마법 (마법사 등) -->
+            <div *ngIf="hasMagic(npc)" class="magic-section">
+              <h6>🔮 연구한 마법</h6>
+              <app-magic-viewer 
+                *ngFor="let magic of getMagic(npc)" 
+                [magic]="magic">
+              </app-magic-viewer>
+            </div>
+
+            <!-- 일반 아이템 (상인 등) -->
+            <div *ngIf="hasItems(npc)" class="items-section">
+              <h6>📦 보유한 아이템</h6>
+              <div *ngFor="let item of getItems(npc)" class="item-card">
+                <div class="item-name">{{ item.name }}</div>
+                <p>{{ item.description }}</p>
+              </div>
+            </div>
+
+            <!-- 생산품이 없는 경우 -->
+            <div *ngIf="!isLoadingProducts(npc.id) && (!npc.products || npc.products.length === 0)" 
+                 class="no-products">
+              <p>아직 생산품이 없습니다.</p>
+              <button class="fantasy-button" (click)="generateNPCProducts(npc)">
+                생산품 생성하기
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== NPC 상세 정보 모달 ==================== -->
+  <!-- 컴팩트 모드에서 NPC 클릭 시 표시되는 상세 정보 모달 -->
+  <div *ngIf="isModalOpen && modalNPC" class="npc-modal-overlay" (click)="onModalBackgroundClick($event)">
+    <div class="npc-modal-container">
+      <!-- ==================== 모달 헤더 ==================== -->
+      <div class="modal-header">
+        <h2 class="modal-title">{{ modalNPC.name }}</h2>
+        <!-- 모달 닫기 버튼 -->
+        <button class="modal-close-btn" (click)="closeNPCModal()">✕</button>
+      </div>
+
+      <!-- ==================== 모달 메인 콘텐츠 ==================== -->
+      <div class="modal-content">
+        <!-- 좌측: NPC 이미지 섹션 -->
+        <div class="modal-image-section">
+          <!-- NPC 이미지 컨테이너 -->
+          <div class="modal-image-container">
+            <img 
+              *ngIf="modalNPC.imageUrl" 
+              [src]="modalNPC.imageUrl" 
+              [alt]="modalNPC.name"
+              class="modal-image">
+            <!-- 이미지가 없을 때 플레이스홀더 -->
+            <div 
+              *ngIf="!modalNPC.imageUrl" 
+              class="modal-placeholder">
+              {{ getRoleIcon(modalNPC.role) }}
+              <!-- 이미지 생성 버튼 (생성 중이 아닐 때) -->
+              <button 
+                *ngIf="!isGeneratingImage(modalNPC.id)"
+                class="modal-generate-image-btn"
+                (click)="onGenerateSingleImage(modalNPC)"
+                title="이미지 생성">
+                🎨 이미지 생성
+              </button>
+              <!-- 이미지 생성 중 스피너 -->
+              <div 
+                *ngIf="isGeneratingImage(modalNPC.id)"
+                class="modal-generating-image"
+                title="이미지 생성 중...">
+                <div class="loading-spinner"></div>
+                <span>생성 중...</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 우측: 탭 기반 상세 정보 섹션 -->
+        <div class="modal-details-section">
+          <!-- ==================== 탭 네비게이션 ==================== -->
+          <div class="modal-tabs">
+            <!-- 캐릭터 정보 탭 -->
+            <button 
+              class="modal-tab-btn"
+              [class.active]="isActiveTab('character')"
+              (click)="setActiveTab('character')">
+              👤 캐릭터 정보
+            </button>
+            <!-- 생산품 탭 -->
+            <button 
+              class="modal-tab-btn"
+              [class.active]="isActiveTab('products')"
+              (click)="setActiveTab('products')">
+              🛡️ 생산품
+            </button>
+          </div>
+
+          <!-- ==================== 탭 콘텐츠 영역 ==================== -->
+          <div class="modal-tab-content">
+            
+            <!-- ==================== 캐릭터 정보 탭 패널 ==================== -->
+            <div *ngIf="isActiveTab('character')" class="modal-tab-panel character-panel">
+              <div class="character-details">
+                <!-- NPC 기본 정보 -->
+                <div class="detail-section">
+                  <h5>📝 기본 정보</h5>
+                  <div class="basic-info-grid">
+                    <div class="info-item">
+                      <strong>이름:</strong> {{ modalNPC.name }}
+                    </div>
+                    <div class="info-item">
+                      <strong>역할:</strong> 
+                      <span [style.color]="getRoleColor(modalNPC.role)">
+                        {{ getRoleIcon(modalNPC.role) }} {{ modalNPC.role }}
+                      </span>
+                    </div>
+                  </div>
+                  <p class="basic-description">{{ modalNPC.description }}</p>
+                </div>
+
+                <!-- NPC 배경 -->
+                <div class="detail-section">
+                  <h5>📖 배경</h5>
+                  <p>{{ modalNPC.background }}</p>
+                </div>
+
+                <!-- NPC 성격 -->
+                <div class="detail-section">
+                  <h5>🎭 성격</h5>
+                  <p>{{ modalNPC.personality }}</p>
+                </div>
+
+                <!-- NPC 외모 -->
+                <div class="detail-section">
+                  <h5>👤 외모</h5>
+                  <p>{{ modalNPC.appearance }}</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- ==================== 생산품 탭 패널 ==================== -->
+            <div *ngIf="isActiveTab('products')" class="modal-tab-panel products-panel">
+              <div class="products-content">
+                <h5 class="products-title">{{ getProductsTitle(modalNPC) }}</h5>
+                
+                <!-- 생산품 로딩 상태 -->
+                <div *ngIf="isLoadingProducts(modalNPC.id)" class="loading-products">
+                  <div class="loading-spinner"></div>
+                  <span>생산품 생성 중...</span>
+                </div>
+
+                <!-- 무기 하위 섹션 -->
+                <div *ngIf="hasWeapons(modalNPC)" class="products-subsection">
+                  <h6>⚔️ 제작된 무기</h6>
+                  <app-weapon-viewer 
+                    *ngFor="let weapon of getWeapons(modalNPC)" 
+                    [weapon]="weapon">
+                  </app-weapon-viewer>
+                </div>
+
+                <!-- 퀘스트 하위 섹션 -->
+                <div *ngIf="hasQuests(modalNPC)" class="products-subsection">
+                  <h6>📋 제공 가능한 퀘스트</h6>
+                  <app-quest-viewer 
+                    *ngFor="let quest of getQuests(modalNPC)" 
+                    [quest]="quest">
+                  </app-quest-viewer>
+                </div>
+
+                <!-- 마법 하위 섹션 -->
+                <div *ngIf="hasMagic(modalNPC)" class="products-subsection">
+                  <h6>🔮 연구한 마법</h6>
+                  <app-magic-viewer 
+                    *ngFor="let magic of getMagic(modalNPC)" 
+                    [magic]="magic">
+                  </app-magic-viewer>
+                </div>
+
+                <!-- 일반 아이템 하위 섹션 -->
+                <div *ngIf="hasItems(modalNPC)" class="products-subsection">
+                  <h6>📦 보유한 아이템</h6>
+                  <div *ngFor="let item of getItems(modalNPC)" class="item-card">
+                    <div class="item-name">{{ item.name }}</div>
+                    <p>{{ item.description }}</p>
+                  </div>
+                </div>
+
+                <!-- 생산품이 없는 경우 생성 버튼 -->
+                <div *ngIf="!isLoadingProducts(modalNPC.id) && (!modalNPC.products || modalNPC.products.length === 0)" 
+                     class="no-products">
+                  <p>아직 생산품이 없습니다.</p>
+                  <button class="fantasy-button" (click)="generateNPCProducts(modalNPC)">
+                    생산품 생성하기
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ==================== 모달 푸터 (액션 버튼들) ==================== -->
+      <div class="modal-footer">
+        <!-- 대화하기 버튼 (주요 액션) -->
+        <button 
+          class="modal-action-btn primary"
+          (click)="onSelectNPC(modalNPC); closeNPCModal()">
+          💬 대화하기
+        </button>
+
+        <!-- ==================== 역할별 특별 기능 버튼들 ==================== -->
+        
+        <!-- 대장장이 무기 제작 버튼 -->
+        <button 
+          *ngIf="isBlacksmith(modalNPC)"
+          class="modal-action-btn role-specific blacksmith"
+          (click)="onCraftWeapon(modalNPC)"
+          title="무기 제작 요청">
+          ⚒️ 무기 제작
+        </button>
+
+        <!-- 마법스크롤 상인 주문 제작 버튼 -->
+        <button 
+          *ngIf="isMagicScrollMerchant(modalNPC)"
+          class="modal-action-btn role-specific magic-merchant"
+          (click)="onCraftSpell(modalNPC)"
+          title="주문 제작 요청">
+          📜 주문 제작
+        </button>
+
+        <!-- 길드 마스터 퀘스트 의뢰 버튼 -->
+        <button 
+          *ngIf="isGuildMaster(modalNPC)"
+          class="modal-action-btn role-specific guild-master"
+          (click)="onAssignQuest(modalNPC)"
+          title="퀘스트 의뢰 요청">
+          📋 퀘스트 의뢰
+        </button>
+        
+        <!-- 개별 이미지 생성 버튼 (이미지가 없고 생성 중이 아닐 때) -->
+        <button 
+          *ngIf="!modalNPC.imageUrl && !isGeneratingImage(modalNPC.id)"
+          class="modal-action-btn secondary"
+          (click)="onGenerateSingleImage(modalNPC)">
+          🎨 이미지 생성
+        </button>
+        <!-- 이미지 생성 중 표시 -->
+        <button 
+          *ngIf="!modalNPC.imageUrl && isGeneratingImage(modalNPC.id)"
+          class="modal-action-btn secondary disabled">
+          <div class="loading-spinner small"></div> 생성 중...
+        </button>
+        <!-- 모달 닫기 버튼 -->
+        <button 
+          class="modal-action-btn tertiary"
+          (click)="closeNPCModal()">
+          닫기
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== 개별 NPC 이미지 생성 Waiting Dialog ==================== -->
+  <div *ngIf="currentGeneratingNPC" class="waiting-dialog-overlay">
+    <div class="waiting-dialog">
+      <div class="waiting-dialog-content">
+        <div class="waiting-spinner">
+          <div class="loading-spinner large"></div>
+        </div>
+        <h3>{{ currentGeneratingNPC.name }} 이미지 생성 중...</h3>
+        <p>AI가 캐릭터의 이미지를 생성하고 있습니다.</p>
+        <p class="waiting-subtext">잠시만 기다려주세요.</p>
+        
+        <!-- 생성 중인 NPC 정보 미리보기 -->
+        <div class="generating-npc-preview">
+          <div class="preview-role" [style.color]="getRoleColor(currentGeneratingNPC.role)">
+            {{ getRoleIcon(currentGeneratingNPC.role) }} {{ currentGeneratingNPC.role }}
+          </div>
+          <div class="preview-description">{{ currentGeneratingNPC.description }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

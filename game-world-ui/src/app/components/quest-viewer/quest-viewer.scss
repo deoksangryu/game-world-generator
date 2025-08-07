@@ -1,0 +1,252 @@
+.quest-viewer-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  background: var(--bg-tertiary);
+  border-radius: 12px;
+  padding: 1.5rem;
+  border: 1px solid var(--border-primary);
+  margin: 1rem 0;
+  overflow-x: hidden;
+}
+
+.quest-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+
+  .quest-name {
+    color: var(--text-primary);
+    margin: 0;
+    font-size: 1.2rem;
+    font-weight: 600;
+    flex: 1;
+  }
+
+  .quest-badges {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    align-items: flex-end;
+
+    .quest-type,
+    .quest-difficulty {
+      color: white;
+      font-weight: 600;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 0.25rem 0.5rem;
+      border-radius: 4px;
+      white-space: nowrap;
+    }
+  }
+}
+
+.quest-info {
+  background: var(--bg-card);
+  padding: 1rem;
+  border-radius: 8px;
+  border: 1px solid var(--border-primary);
+
+  .quest-meta {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.75rem;
+
+    .meta-item {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+
+      .meta-label {
+        color: var(--text-secondary);
+        font-size: 0.8rem;
+      }
+
+      .meta-value {
+        color: var(--text-primary);
+        font-weight: 600;
+        font-size: 0.9rem;
+      }
+    }
+  }
+
+  .progress-bar {
+    width: 100%;
+    height: 8px;
+    background: var(--bg-primary);
+    border-radius: 4px;
+    overflow: hidden;
+
+    .progress-fill {
+      height: 100%;
+      background: var(--gradient-primary);
+      transition: width 0.3s ease;
+      border-radius: 4px;
+    }
+  }
+}
+
+.quest-description {
+  p {
+    color: var(--text-secondary);
+    line-height: 1.6;
+    font-size: 0.9rem;
+    margin: 0;
+  }
+}
+
+.quest-objectives,
+.quest-rewards,
+.quest-prerequisites {
+  h5 {
+    color: var(--text-primary);
+    margin-bottom: 0.75rem;
+    font-size: 1rem;
+    font-weight: 600;
+  }
+}
+
+.objectives-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+
+  .objective-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem;
+    background: var(--bg-card);
+    border-radius: 8px;
+    border: 1px solid var(--border-primary);
+    transition: all 0.3s ease;
+
+    &.completed {
+      background: rgba(16, 185, 129, 0.1);
+      border-color: var(--accent-success);
+
+      .objective-text {
+        text-decoration: line-through;
+        opacity: 0.7;
+      }
+    }
+
+    .objective-content {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      flex: 1;
+
+      .objective-icon {
+        font-size: 1.1rem;
+      }
+
+      .objective-text {
+        color: var(--text-primary);
+        font-size: 0.9rem;
+        flex: 1;
+      }
+
+      .objective-quantity {
+        color: var(--text-secondary);
+        font-size: 0.8rem;
+        font-weight: 600;
+      }
+    }
+
+    .objective-status {
+      .status-complete {
+        color: var(--accent-success);
+        font-weight: 600;
+        font-size: 1.1rem;
+      }
+
+      .status-pending {
+        color: var(--text-muted);
+        font-size: 1.1rem;
+      }
+    }
+  }
+}
+
+.rewards-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+
+  .reward-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem;
+    background: var(--bg-card);
+    border-radius: 6px;
+    border: 1px solid var(--border-primary);
+
+    .reward-icon {
+      font-size: 1.1rem;
+    }
+
+    .reward-text {
+      color: var(--text-primary);
+      font-size: 0.9rem;
+
+      .reward-item-name {
+        color: var(--accent-primary);
+        font-weight: 600;
+      }
+    }
+  }
+}
+
+.prerequisites-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+
+  .prerequisite-tag {
+    background: var(--bg-card);
+    color: var(--text-secondary);
+    padding: 0.25rem 0.5rem;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    border: 1px solid var(--accent-warning);
+    background: rgba(245, 158, 11, 0.1);
+  }
+}
+
+// Responsive design
+@media (max-width: 768px) {
+  .quest-viewer-container {
+    padding: 1rem;
+  }
+
+  .quest-header {
+    flex-direction: column;
+    gap: 0.5rem;
+    align-items: flex-start;
+
+    .quest-badges {
+      flex-direction: row;
+      align-items: flex-start;
+    }
+  }
+
+  .quest-info {
+    .quest-meta {
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+  }
+
+  .objective-item {
+    .objective-content {
+      .objective-text {
+        font-size: 0.85rem;
+      }
+    }
+  }
+} 

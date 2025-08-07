@@ -1,0 +1,37 @@
+{
+  "world": {
+    "id": "demo-world",
+    "title": "루멘 카니언 중간계",
+    "overview": "빛과 어둠의 파편들이 충돌하며 생겨난 완충 지대인 중간계. 다종족이 공존하지만 언제나 파편 간 균열 위험이 도사린다.",
+    "genre": "fantasy"
+  },
+  "npcs": [
+    {
+      "id": "alaria-sol",
+      "name": "아라리아 솔",
+      "species": "human",
+      "gender": "female",
+      "age": 28,
+      "affiliation": "솔로리아 정찰대",
+      "personality": "호기심 많고 낙천적이지만 책임감이 강하다",
+      "skills": ["쌍단검", "암영 회피", "고대어 번역"],
+      "level_requirement": 5
+    },
+    {
+      "id": "sylen-arcline",
+      "name": "실렌 아크라인",
+      "species": "elf",
+      "gender": "male",
+      "age": 312,
+      "affiliation": "연금의 의회",
+      "personality": "치밀하고 냉철하며 예술적 감수성이 높다",
+      "skills": ["대규모 결계", "사격 마법", "정신 교감"],
+      "level_requirement": 12,
+      "imageUrl": "https://via.placeholder.com/300x150/059669/ffffff?text=Sylen"
+    }
+  ],
+  "history": [
+    { "name": "파편의 새벽", "timeframe": "-10000", "description": "태초의 존재가 산산이 부서지며 파편이 생겨났다." },
+    { "name": "엘프 성역 주문", "timeframe": "-6000", "description": "엘프들이 충돌을 막기 위해 대형 보호 주문을 시전했다." }
+  ]
+} 

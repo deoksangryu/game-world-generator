@@ -1,0 +1,658 @@
+//==============================================
+// 세계관 표시 컴포넌트 - 원본 텍스트 중심 스타일
+//==============================================
+
+.world-display-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+// ==================== 헤더 카드 ====================
+.world-header-card {
+  background: linear-gradient(135deg, rgba(129, 199, 239, 0.1), rgba(134, 239, 172, 0.1));
+  border: 1px solid rgba(129, 199, 239, 0.3);
+
+  .world-avatar {
+    background: linear-gradient(135deg, #81c7ef, #86efac);
+    color: white;
+    font-size: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .world-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+    padding: 0 1rem 1rem 1rem;
+
+    .stats-info {
+      flex: 1;
+      
+      mat-chip-set {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+      }
+
+      mat-chip {
+        font-size: 0.85rem;
+        color: rgba(255, 255, 255, 0.9);
+        background: rgba(129, 199, 239, 0.2);
+      }
+    }
+
+    .action-buttons {
+      display: flex;
+      gap: 0.5rem;
+    }
+  }
+}
+
+// ==================== 콘텐츠 카드 ====================
+.world-content-card {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+
+  .display-mode-indicator {
+    padding: 1rem 1rem 0 1rem;
+    
+    mat-chip {
+      font-size: 0.8rem;
+    }
+  }
+
+  .world-text-content {
+    .text-display {
+      line-height: 1.8;
+      color: #e0e0e0;
+      
+      // 기본 타이포그래피
+      ::ng-deep {
+        // 헤딩 스타일
+        h1, h2, h3, h4, h5, h6 {
+          margin: 1.5rem 0 1rem 0;
+          color: #81c7ef;
+          font-weight: 600;
+          line-height: 1.4;
+        }
+
+        h1.section-h1 {
+          font-size: 1.8rem;
+          border-bottom: 2px solid rgba(129, 199, 239, 0.3);
+          padding-bottom: 0.5rem;
+        }
+
+        h2.section-h2 {
+          font-size: 1.5rem;
+          color: #86efac;
+        }
+
+        h3.section-h3, h3.circle-heading {
+          font-size: 1.3rem;
+          color: #fbbf24;
+        }
+
+        // 카드 스타일 정보
+        .info-card {
+          background: rgba(129, 199, 239, 0.1);
+          border: 1px solid rgba(129, 199, 239, 0.2);
+          border-radius: 12px;
+          padding: 1.5rem;
+          margin: 1rem 0;
+          transition: all 0.3s ease;
+
+          &:hover {
+            background: rgba(129, 199, 239, 0.15);
+            border-color: rgba(129, 199, 239, 0.3);
+            transform: translateY(-2px);
+          }
+
+          .card-title {
+            margin: 0 0 1rem 0;
+            color: #81c7ef;
+            font-size: 1.2rem;
+            font-weight: 600;
+          }
+
+          .card-content {
+            margin: 0;
+            color: #e0e0e0;
+            line-height: 1.7;
+          }
+        }
+
+        // 타임라인 스타일
+        .timeline-entry {
+          display: flex;
+          align-items: flex-start;
+          gap: 1rem;
+          margin: 1rem 0;
+          padding: 1rem;
+          background: rgba(134, 239, 172, 0.05);
+          border-left: 3px solid #86efac;
+          border-radius: 0 8px 8px 0;
+
+          .timeline-year {
+            background: #86efac;
+            color: #000;
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            white-space: nowrap;
+            min-width: 80px;
+            text-align: center;
+          }
+
+          .timeline-event {
+            flex: 1;
+            color: #e0e0e0;
+            line-height: 1.6;
+          }
+        }
+
+        // 텍스트 요소
+        p.text-paragraph {
+          margin: 1rem 0;
+          line-height: 1.8;
+          color: #e0e0e0;
+        }
+
+        // 리스트 스타일
+        ul.bullet-list {
+          margin: 1rem 0;
+          padding-left: 0;
+          list-style: none;
+
+          li.bullet-item {
+            position: relative;
+            padding: 0.5rem 0 0.5rem 2rem;
+            margin: 0.5rem 0;
+            border-left: 2px solid rgba(129, 199, 239, 0.3);
+            
+            &:before {
+              content: '▸';
+              position: absolute;
+              left: 0.5rem;
+              color: #81c7ef;
+              font-weight: bold;
+            }
+          }
+        }
+
+        // 강조 텍스트
+        strong {
+          color: #fbbf24;
+          font-weight: 600;
+        }
+
+        em {
+          color: #86efac;
+          font-style: italic;
+        }
+
+        // 원본 텍스트 모드
+        .raw-text {
+          font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
+          background: rgba(0, 0, 0, 0.3);
+          padding: 1.5rem;
+          border-radius: 8px;
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          color: #d1d5db;
+          font-size: 0.9rem;
+          line-height: 1.6;
+          white-space: pre-wrap;
+          overflow-x: auto;
+        }
+      }
+    }
+
+    // 원본 텍스트 모드 스타일
+    .text-display.raw-text-mode {
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 8px;
+      padding: 1rem;
+    }
+
+    // 미리보기 모드 스타일
+    .text-display.preview-mode {
+      position: relative;
+      
+      &:after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 2rem;
+        background: linear-gradient(transparent, rgba(0, 0, 0, 0.8));
+        pointer-events: none;
+      }
+    }
+
+    .preview-notice {
+      text-align: center;
+      margin-top: 2rem;
+      padding: 1rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+  }
+}
+
+// ==================== 메타 정보 카드 ====================
+.world-meta-card {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+
+  .meta-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+
+    .meta-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: rgba(255, 255, 255, 0.7);
+      font-size: 0.9rem;
+
+      mat-icon {
+        color: #81c7ef;
+        font-size: 1.2rem;
+      }
+    }
+  }
+}
+
+// ==================== 플레이스홀더 ====================
+.no-world-placeholder {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 300px;
+
+  .placeholder-card {
+    background: rgba(255, 255, 255, 0.02);
+    border: 2px dashed rgba(129, 199, 239, 0.3);
+    width: 100%;
+    max-width: 500px;
+
+    .placeholder-content {
+      text-align: center;
+      padding: 2rem;
+
+      .placeholder-icon {
+        font-size: 4rem;
+        color: rgba(129, 199, 239, 0.6);
+        margin-bottom: 1rem;
+      }
+
+      h3 {
+        color: #81c7ef;
+        margin-bottom: 1rem;
+        font-weight: 600;
+      }
+
+      p {
+        color: rgba(255, 255, 255, 0.7);
+        line-height: 1.6;
+      }
+    }
+  }
+}
+
+// ==================== 반응형 디자인 ====================
+@media (max-width: 768px) {
+  .world-display-container {
+    padding: 0.5rem;
+    gap: 1rem;
+  }
+
+  .world-header-card {
+    .world-controls {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 1rem;
+
+      .stats-info {
+        order: 2;
+      }
+
+      .action-buttons {
+        order: 1;
+        justify-content: center;
+      }
+    }
+  }
+
+  .world-content-card {
+    .world-text-content {
+      .text-display {
+        ::ng-deep {
+          .info-card {
+            padding: 1rem;
+            margin: 0.8rem 0;
+
+            .card-title {
+              font-size: 1.1rem;
+            }
+          }
+
+          .timeline-entry {
+            flex-direction: column;
+            gap: 0.5rem;
+            padding: 0.8rem;
+
+            .timeline-year {
+              align-self: flex-start;
+            }
+          }
+
+          h1.section-h1 {
+            font-size: 1.5rem;
+          }
+
+          h2.section-h2 {
+            font-size: 1.3rem;
+          }
+
+          h3.section-h3, h3.circle-heading {
+            font-size: 1.2rem;
+          }
+        }
+      }
+    }
+  }
+
+  .world-meta-card {
+    .meta-info {
+      .meta-item {
+        font-size: 0.85rem;
+      }
+    }
+  }
+}
+
+// Material 컴포넌트 색상 오버라이드
+.world-display-container {
+  // Material Card 기본 스타일 오버라이드
+  ::ng-deep .mat-mdc-card {
+    background: rgba(37, 37, 53, 0.8) !important;
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--border-primary) !important;
+    box-shadow: var(--shadow-lg) !important;
+    color: var(--text-primary) !important;
+  }
+
+  ::ng-deep .mat-mdc-card:hover {
+    border-color: var(--accent-primary) !important;
+    box-shadow: var(--shadow-glow) !important;
+  }
+
+  // Material Chip 스타일 오버라이드
+  ::ng-deep .mat-mdc-chip {
+    background: var(--gradient-primary) !important;
+    color: var(--text-primary) !important;
+    border: 1px solid var(--accent-primary) !important;
+    
+    .mat-mdc-chip-text {
+      color: var(--text-primary) !important;
+    }
+    
+    .mat-icon {
+      color: var(--text-primary) !important;
+    }
+  }
+
+  // Material Stepper 스타일 오버라이드
+  ::ng-deep .mat-stepper-vertical {
+    background: transparent !important;
+    
+    .mat-step-header {
+      background: rgba(37, 37, 53, 0.6) !important;
+      border: 1px solid var(--border-primary) !important;
+      border-radius: 8px !important;
+      margin: 0.5rem 0 !important;
+      padding: 1rem !important;
+      color: var(--text-primary) !important;
+      
+      &:hover {
+        background: rgba(59, 130, 246, 0.1) !important;
+        border-color: var(--accent-primary) !important;
+      }
+    }
+    
+    .mat-step-icon {
+      background: var(--gradient-primary) !important;
+      color: white !important;
+      border: 2px solid var(--accent-primary) !important;
+    }
+    
+    .mat-step-icon-selected {
+      background: var(--accent-primary) !important;
+    }
+    
+    .mat-step-label {
+      color: var(--text-primary) !important;
+    }
+  }
+
+  // Material Expansion Panel 스타일 오버라이드
+  ::ng-deep .mat-expansion-panel {
+    background: rgba(37, 37, 53, 0.8) !important;
+    border: 1px solid var(--border-primary) !important;
+    border-radius: 12px !important;
+    margin: 0.5rem 0 !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2) !important;
+    
+    &:hover {
+      border-color: var(--accent-primary) !important;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3) !important;
+    }
+    
+    .mat-expansion-panel-header {
+      color: var(--text-primary) !important;
+      background: transparent !important;
+      
+      .mat-expansion-panel-header-title {
+        color: var(--text-primary) !important;
+        font-weight: 600 !important;
+        font-size: 1.25rem !important;
+      }
+      
+      .mat-icon {
+        color: var(--accent-primary) !important;
+      }
+    }
+    
+    .mat-expansion-panel-content {
+      background: rgba(60, 36, 20, 0.1) !important;
+      
+      .mat-expansion-panel-body {
+        color: var(--text-primary) !important;
+        padding: 1.5rem !important;
+      }
+    }
+  }
+
+  // Material Button 스타일 오버라이드
+  ::ng-deep .mat-mdc-fab {
+    background: var(--gradient-primary) !important;
+    color: white !important;
+    
+    .mat-icon {
+      color: white !important;
+    }
+  }
+}
+
+.original-input-card {
+  margin-bottom: 24px;
+  
+  .original-text {
+    font-style: italic;
+    color: var(--text-secondary, #666);
+    line-height: 1.6;
+    margin: 0;
+  }
+}
+
+.content-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.section-card {
+  margin-bottom: 16px;
+  
+  mat-card-header {
+    margin-bottom: 16px;
+    
+    mat-card-title {
+      font-size: 1.3rem;
+      font-weight: 600;
+    }
+  }
+}
+
+// 타임라인 년도 스타일
+.timeline-year {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  
+  &.ancient {
+    color: var(--accent-warning, #ff9800);
+  }
+  
+  mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+  }
+}
+
+.timeline-event {
+  margin-top: 8px;
+  line-height: 1.5;
+  color: var(--text-primary, #333);
+}
+
+// 통계 카드
+.stats-card {
+  margin-top: 20px;
+  
+  .stat-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    
+    mat-icon {
+      color: var(--accent-color, #ff4081);
+    }
+    
+    .stat-label {
+      font-weight: 500;
+      color: var(--text-secondary, #666);
+    }
+    
+    .stat-value {
+      color: var(--text-primary, #333);
+    }
+  }
+}
+
+// 펼치기/접기 컨트롤
+.expand-controls {
+  display: flex;
+  justify-content: center;
+  margin-top: 2rem;
+  
+  button[mat-fab] {
+    background: var(--gradient-primary) !important;
+    color: white !important;
+    font-weight: 500;
+    
+    mat-icon {
+      margin-right: 0.5rem;
+    }
+  }
+}
+
+// 애니메이션
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// ==================== 지형·지역 (Material Expansion Panels) ====================
+.locations-card {
+  mat-expansion-panel {
+    margin-bottom: 8px;
+    
+    mat-expansion-panel-header {
+      mat-panel-title {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-weight: 500;
+        
+        mat-icon {
+          color: var(--primary-color, #3f51b5);
+        }
+      }
+    }
+  }
+}
+
+// ==================== 통계 정보 ====================
+.stats-card {
+  margin-top: 20px;
+  
+  .stat-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    
+    mat-icon {
+      color: var(--accent-color, #ff4081);
+    }
+    
+    .stat-label {
+      font-weight: 500;
+      color: var(--text-secondary, #666);
+    }
+    
+    .stat-value {
+      color: var(--text-primary, #333);
+    }
+  }
+}
+
+// ==================== 디버깅 도구 ====================
+.debug-card {
+  margin-top: 20px;
+  border: 1px dashed var(--accent-warning, #ff9800);
+  
+  mat-card-header {
+    mat-card-title {
+      color: var(--accent-warning, #ff9800);
+    }
+  }
+} 

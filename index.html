@@ -1,0 +1,808 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game World Studio - 류덕상</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Noto Sans KR', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            overflow: hidden;
+        }
+        
+        .presentation-container {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .slide-container {
+            width: 90%;
+            max-width: 1200px;
+            height: 80vh;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .slide {
+            display: none;
+            width: 100%;
+            height: 100%;
+            padding: 60px 60px 120px 60px; /* 하단 여백 증가 */
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+        
+        .slide.active {
+            display: flex;
+        }
+        
+        .slide h1 {
+            font-size: 3.5em;
+            color: #2c3e50;
+            margin-bottom: 30px;
+            text-align: center;
+            font-weight: 700;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .slide h2 {
+            font-size: 2.8em;
+            color: #34495e;
+            margin-bottom: 40px;
+            text-align: center;
+            font-weight: 600;
+        }
+        
+        .slide h3 {
+            font-size: 2em;
+            color: #2980b9;
+            margin-bottom: 25px;
+            font-weight: 600;
+        }
+        
+        .slide p {
+            font-size: 1.4em;
+            line-height: 1.8;
+            color: #444;
+            text-align: center;
+            margin-bottom: 20px;
+            max-width: 800px;
+        }
+        
+        .slide ul {
+            font-size: 1.3em;
+            line-height: 2;
+            color: #555;
+            text-align: left;
+            max-width: 900px;
+        }
+        
+        .slide li {
+            margin-bottom: 15px;
+            padding-left: 20px;
+            position: relative;
+        }
+        
+        .slide li::before {
+            content: "✦";
+            color: #667eea;
+            position: absolute;
+            left: 0;
+            font-size: 1.2em;
+        }
+        
+        .highlight {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: 700;
+        }
+        
+        .journey-timeline {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+            max-width: 800px;
+        }
+        
+        .timeline-item {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            padding: 25px 35px;
+            border-radius: 15px;
+            border-left: 5px solid #667eea;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        
+        .timeline-year {
+            font-size: 1.2em;
+            color: #667eea;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+        
+        .timeline-content {
+            font-size: 1.3em;
+            color: #444;
+            line-height: 1.6;
+        }
+        
+        .product-features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            max-width: 1000px;
+        }
+        
+        .feature-card {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .feature-icon {
+            font-size: 3em;
+            margin-bottom: 20px;
+        }
+        
+        .feature-title {
+            font-size: 1.5em;
+            color: #2c3e50;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+        
+        .feature-desc {
+            font-size: 1.2em;
+            color: #666;
+            line-height: 1.6;
+        }
+        
+        .navigation {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 15px;
+            z-index: 1000;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 10px 20px;
+            border-radius: 50px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+        }
+        
+        .nav-btn {
+            width: 45px;
+            height: 45px;
+            border: none;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 3px 10px rgba(102, 126, 234, 0.3);
+        }
+        
+        .nav-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.5);
+        }
+        
+        .slide-counter {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 1em;
+            color: #667eea;
+            font-weight: 600;
+            z-index: 1000;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+        }
+        
+        .intro-slide {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+        }
+        
+        .subtitle {
+            font-size: 1.6em;
+            color: #666;
+            font-weight: 400;
+            margin-top: 20px;
+        }
+        
+        .team-info {
+            background: rgba(102, 126, 234, 0.1);
+            padding: 20px 30px;
+            border-radius: 15px;
+            margin-top: 30px;
+            font-size: 1.3em;
+            color: #555;
+        }
+        
+        /* 영상 관련 스타일 */
+        .video-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            max-height: 60vh; /* 화면 높이의 60%로 제한 */
+            margin: 20px 0;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            aspect-ratio: 16/9; /* 16:9 비율 강제 */
+        }
+        
+        .video-player {
+            width: 100%;
+            height: 100%;
+            max-height: 50vh; /* 화면 높이의 50%로 제한 */
+            background: #000;
+            border: none;
+            outline: none;
+            object-fit: contain; /* 비율 유지하며 영역 내 맞춤 */
+        }
+        
+        .video-controls {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 10px;
+            background: rgba(0,0,0,0.8);
+            color: white;
+            flex-wrap: wrap; /* 버튼이 많을 경우 줄바꿈 */
+        }
+        
+        .video-btn {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            border: none;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            margin: 2px;
+        }
+        
+        .video-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+        
+        .video-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .video-upload-area {
+            border: 2px dashed #667eea;
+            border-radius: 15px;
+            padding: 40px;
+            text-align: center;
+            background: rgba(102, 126, 234, 0.05);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 20px 0;
+        }
+        
+        .video-upload-area:hover {
+            background: rgba(102, 126, 234, 0.1);
+            border-color: #764ba2;
+        }
+        
+        .video-upload-area.dragover {
+            background: rgba(102, 126, 234, 0.15);
+            border-color: #764ba2;
+            transform: scale(1.02);
+        }
+        
+        .upload-icon {
+            font-size: 3em;
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+        
+        .upload-text {
+            font-size: 1.2em;
+            color: #666;
+            margin-bottom: 10px;
+        }
+        
+        .upload-hint {
+            font-size: 1em;
+            color: #999;
+        }
+        
+        .video-url-input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            font-size: 1.1em;
+            margin: 10px 0;
+            transition: border-color 0.3s ease;
+        }
+        
+        .video-url-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .video-slide {
+            justify-content: flex-start;
+            gap: 20px;
+            overflow-y: auto; /* 내용이 넘칠 경우 스크롤 */
+        }
+        
+        .demo-section {
+            width: 100%;
+            max-width: 900px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="presentation-container">
+        <div class="slide-container">
+            <div class="slide-counter">
+                <span id="current-slide">1</span> / <span id="total-slides">6</span>
+            </div>
+            
+            <!-- Slide 1: 타이틀 슬라이드 -->
+            <div class="slide active intro-slide">
+                <h1>Game World Studio</h1>
+                <p class="subtitle">대규모 언어모델과 생성형 AI를 결합한<br>게임 세계관 자동 구축 플랫폼</p>
+                <div class="team-info">
+                    <strong>항해플러스 AI 3기 1팀 팀장</strong><br>
+                    류덕상<br>
+                    deoksang09@gmail.com
+                </div>
+            </div>
+            
+            <!-- Slide 2: 자기소개 -->
+            <div class="slide">
+                <h2>자기소개</h2>
+                <div class="journey-timeline">
+                    <div class="timeline-item">
+                        <div class="timeline-year">2017년</div>
+                        <div class="timeline-content">스타트업 <span class="highlight">수아랩</span> 합류, 딥러닝 기반 비전툴 회사</div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-year">수아랩 시절</div>
+                        <div class="timeline-content">딥러닝 기반 비전툴 <span class="highlight">SUAKIT</span> 개발 참여</div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-year">현재</div>
+                        <div class="timeline-content">수아랩이 약 <span class="highlight">2,300억 원</span>에 <span class="highlight">코그넥스</span> 인수<br>머신비전과 AI 솔루션 개발</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Slide 4: Game World Studio 소개 -->
+            <div class="slide">
+                <h2>Game World Studio란?</h2>
+                <p style="font-size: 1.6em; margin-bottom: 40px; color: #2c3e50;">
+                    <span class="highlight">대규모 언어모델</span>과 <span class="highlight">생성형 AI</span>를 결합해<br>
+                    게임의 <strong>세계관</strong>을 자동으로 구축하고,<br>
+                    그 안에서 살아 움직이는 <strong>NPC</strong>를 창조하는 플랫폼
+                </p>
+                <div class="product-features">
+                    <div class="feature-card">
+                        <div class="feature-icon">🌍</div>
+                        <div class="feature-title">세계관 자동 구축</div>
+                        <div class="feature-desc">AI가 일관된 세계관을<br>자동으로 생성</div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">🤖</div>
+                        <div class="feature-title">살아있는 NPC</div>
+                        <div class="feature-desc">생성형 AI로<br>역동적인 캐릭터 창조</div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">📚</div>
+                        <div class="feature-title">몰입형 스토리텔링</div>
+                        <div class="feature-desc">통합적인<br>내러티브 지원</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Slide 5: 세계관의 중요성 -->
+            <div class="slide">
+                <h2>왜 세계관이 중요한가?</h2>
+                <ul>
+                    <li><span class="highlight">핵심 지적 자산</span>으로서 작품의 가치 체계를 규정</li>
+                    <li>음악, 영상 등 <span class="highlight">파생 콘텐츠</span>의 방향성 결정</li>
+                    <li>기획 단계에서 인물·지형·도시·풍경 등 <span class="highlight">수많은 요소</span>를 일일이 설계해야 하는 부담</li>
+                    <li>창작자들이 느끼는 <span class="highlight">막막함을 줄여줄 도구</span>의 필요성</li>
+                </ul>
+            </div>
+            
+            <div class="slide">
+                <h2>시연 항목</h2>
+                <ul>
+                    <li>세계관 생성</li>
+                    <li>NPC 프로필 생성 + 이미지 생성</li>
+                    <li>NPC 대화 + 음성 + 비디오 생성</li>
+                    <li>3D 모델 생성</li>
+                </ul>
+            </div>
+
+            <!-- Slide 6: 데모 영상 -->
+            <div class="slide video-slide">
+                <h2>Game World Studio 데모</h2>
+                
+                <div class="demo-section">
+                    <!-- 로컬 영상 선택 버튼들 -->
+                    <div style="display: flex; gap: 10px; margin: 20px 0; flex-wrap: wrap; justify-content: center;">
+                        <button class="video-btn" onclick="loadLocalVideo(0)">
+                            🎬 시연 영상
+                        </button>
+                        <button class="video-btn" onclick="loadLocalVideo(1)">
+                            🎬 세계관 추가영상
+                        </button>
+                        <button class="video-btn" onclick="loadLocalVideo(2)">
+                            🎬 NPC대화 추가영상
+                        </button>
+                        <button class="video-btn" onclick="loadLocalVideo(3)">
+                            🎬 NPC대화 음성비디오 추가영상
+                        </button>
+                    </div>
+                    
+                    <!-- 영상 업로드 영역 -->
+                    <div id="videoUploadArea" class="video-upload-area" onclick="document.getElementById('videoInput').click()">
+                        <div class="upload-icon">📁</div>
+                    </div>
+                    
+                    <input type="file" id="videoInput" accept="video/*" style="display: none;">
+                    
+                    <!-- URL 입력
+                    <div style="width: 100%; max-width: 600px;">
+                        <input type="text" id="videoUrlInput" class="video-url-input" 
+                               placeholder="또는 YouTube, Vimeo 등의 URL을 입력하세요">
+                        <button class="video-btn" onclick="loadVideoFromUrl()">
+                            🔗 URL에서 로드
+                        </button>
+                    </div> -->
+                    
+                    <!-- 영상 플레이어 -->
+                    <div id="videoContainer" class="video-container" style="display: none;">
+                        <video id="videoPlayer" class="video-player" controls>
+                            <source id="videoSource" src="" type="video/mp4">
+                            브라우저가 비디오 태그를 지원하지 않습니다.
+                        </video>
+                        
+                        <div class="video-controls">
+                            <button id="playPauseBtn" class="video-btn" onclick="togglePlayPause()">
+                                ▶️ 재생
+                            </button>
+                            <button class="video-btn" onclick="skipBackward()">
+                                ⏪ -5초
+                            </button>
+                            <button class="video-btn" onclick="skipForward()">
+                                ⏩ +5초
+                            </button>
+                            <button class="video-btn" onclick="restartVideo()">
+                                🔄 처음부터
+                            </button>
+                            <button class="video-btn" onclick="toggleMute()">
+                                🔊 음소거
+                            </button>
+                            <button class="video-btn" onclick="toggleFullscreen()">
+                                📺 전체화면
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Slide 7: 비전과 기대효과 -->
+            <div class="slide">
+                <h2>비전과 기대효과</h2>
+                <p style="font-size: 1.8em; margin-bottom: 40px; color: #2c3e50;">
+                    창작자의 상상력을 구체화하고<br>
+                    게임·엔터테인먼트 산업 전반에<br>
+                    <span class="highlight" style="font-size: 1.3em;">창작 아이디어의 촉진제</span>가 되는 것
+                </p>
+                <div class="product-features">
+                    <div class="feature-card">
+                        <div class="feature-icon">⚡</div>
+                        <div class="feature-title">개발 속도 향상</div>
+                        <div class="feature-desc">기획 단계 시간 단축</div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">💡</div>
+                        <div class="feature-title">창작 영감 제공</div>
+                        <div class="feature-desc">새로운 아이디어 발굴</div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">🎯</div>
+                        <div class="feature-title">일관성 보장</div>
+                        <div class="feature-desc">체계적인 세계관 관리</div>
+                    </div>
+                </div>
+            </div>
+            
+                        <!-- Slide 8: 프로젝트를 통해 배운 점 -->
+                        <div class="slide">
+                            <h2>프로젝트를 통해 배운 점</h2>
+                            <ul>
+                                <li>생성형 AI 활용 경험</li>
+                                <li>대규모 언어모델 활용 경험</li>
+                                <li>프로젝트 관리 경험</li>
+                                <li>어떻게 하면 AI 와 잘 협업하는가</li>
+                                <li>모델 튜닝, 다양한 스킬</li>
+                            </ul>
+                        </div>
+
+            <div class="navigation">
+                <button class="nav-btn" onclick="prevSlide()">‹</button>
+                <button class="nav-btn" onclick="nextSlide()">›</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length;
+        
+        document.getElementById('total-slides').textContent = totalSlides;
+        
+        // 영상 관련 변수
+        let videoPlayer = null;
+        let isVideoLoaded = false;
+        
+        // 로컬 영상 파일 경로들 (여기에 실제 경로를 입력하세요)
+        const localVideos = [
+            '샘플영상_001.mp4',  // 첫 번째 데모 영상
+            '세계관_추가샘플영상.mp4',  // 두 번째 데모 영상  
+            'NPC대화_추가샘플영상.mp4',  // 세 번째 데모 영상
+            'NPC대화_음성비디오_추가샘플영상.mp4'   // 네 번째 데모 영상
+        ];
+        
+        let currentVideoIndex = 0;
+        
+        function showSlide(n) {
+            slides[currentSlide].classList.remove('active');
+            currentSlide = (n + totalSlides) % totalSlides;
+            slides[currentSlide].classList.add('active');
+            document.getElementById('current-slide').textContent = currentSlide + 1;
+            
+            // 비디오 슬라이드가 아닐 때 비디오 일시정지
+            if (videoPlayer && !videoPlayer.paused && currentSlide !== 5) {
+                videoPlayer.pause();
+            }
+        }
+        
+        function nextSlide() {
+            showSlide(currentSlide + 1);
+        }
+        
+        function prevSlide() {
+            showSlide(currentSlide - 1);
+        }
+        
+        // 영상 관련 함수들
+        function initializeVideoPlayer() {
+            videoPlayer = document.getElementById('videoPlayer');
+            
+            videoPlayer.addEventListener('loadeddata', function() {
+                isVideoLoaded = true;
+                document.getElementById('videoContainer').style.display = 'block';
+                document.getElementById('videoUploadArea').style.display = 'none';
+            });
+            
+            videoPlayer.addEventListener('play', function() {
+                document.getElementById('playPauseBtn').innerHTML = '⏸️ 일시정지';
+            });
+            
+            videoPlayer.addEventListener('pause', function() {
+                document.getElementById('playPauseBtn').innerHTML = '▶️ 재생';
+            });
+            
+            videoPlayer.addEventListener('ended', function() {
+                document.getElementById('playPauseBtn').innerHTML = '▶️ 재생';
+            });
+        }
+        
+        function togglePlayPause() {
+            if (!videoPlayer || !isVideoLoaded) return;
+            
+            if (videoPlayer.paused) {
+                videoPlayer.play();
+            } else {
+                videoPlayer.pause();
+            }
+        }
+        
+        function skipBackward() {
+            if (!videoPlayer || !isVideoLoaded) return;
+            videoPlayer.currentTime = Math.max(0, videoPlayer.currentTime - 5);
+        }
+        
+        function skipForward() {
+            if (!videoPlayer || !isVideoLoaded) return;
+            videoPlayer.currentTime = Math.min(videoPlayer.duration, videoPlayer.currentTime + 5);
+        }
+        
+        function restartVideo() {
+            if (!videoPlayer || !isVideoLoaded) return;
+            videoPlayer.currentTime = 0;
+            videoPlayer.play();
+        }
+        
+        function toggleMute() {
+            if (!videoPlayer || !isVideoLoaded) return;
+            videoPlayer.muted = !videoPlayer.muted;
+        }
+        
+        function toggleFullscreen() {
+            if (!videoPlayer || !isVideoLoaded) return;
+            
+            if (videoPlayer.requestFullscreen) {
+                videoPlayer.requestFullscreen();
+            } else if (videoPlayer.webkitRequestFullscreen) {
+                videoPlayer.webkitRequestFullscreen();
+            } else if (videoPlayer.msRequestFullscreen) {
+                videoPlayer.msRequestFullscreen();
+            }
+        }
+        
+        function loadLocalVideo(index) {
+            if (index < 0 || index >= localVideos.length) return;
+            
+            currentVideoIndex = index;
+            const videoSource = document.getElementById('videoSource');
+            videoSource.src = localVideos[index];
+            videoPlayer.load();
+            
+            // 업로드 영역 숨기기
+            document.getElementById('videoUploadArea').style.display = 'none';
+        }
+        
+        function loadVideoFromUrl() {
+            const url = document.getElementById('videoUrlInput').value.trim();
+            if (!url) return;
+            
+            // YouTube URL 처리
+            if (url.includes('youtube.com') || url.includes('youtu.be')) {
+                alert('YouTube 영상의 경우 직접 재생이 제한될 수 있습니다. 다운로드한 파일을 업로드해주세요.');
+                return;
+            }
+            
+            const videoSource = document.getElementById('videoSource');
+            videoSource.src = url;
+            videoPlayer.load();
+        }
+        
+        // 파일 업로드 처리
+        document.getElementById('videoInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const url = URL.createObjectURL(file);
+                const videoSource = document.getElementById('videoSource');
+                videoSource.src = url;
+                videoPlayer.load();
+            }
+        });
+        
+        // 드래그 앤 드롭 처리
+        const uploadArea = document.getElementById('videoUploadArea');
+        
+        uploadArea.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+        
+        uploadArea.addEventListener('dragleave', function(e) {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+        });
+        
+        uploadArea.addEventListener('drop', function(e) {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            
+            const files = e.dataTransfer.files;
+            if (files.length > 0 && files[0].type.startsWith('video/')) {
+                const url = URL.createObjectURL(files[0]);
+                const videoSource = document.getElementById('videoSource');
+                videoSource.src = url;
+                videoPlayer.load();
+            }
+        });
+        
+        // 페이지 로드 시 비디오 플레이어 초기화
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeVideoPlayer();
+        });
+        
+        // 기존 네비게이션 코드...
+        
+        function showSlide(n) {
+            slides[currentSlide].classList.remove('active');
+            currentSlide = (n + totalSlides) % totalSlides;
+            slides[currentSlide].classList.add('active');
+            document.getElementById('current-slide').textContent = currentSlide + 1;
+        }
+        
+        function nextSlide() {
+            showSlide(currentSlide + 1);
+        }
+        
+        function prevSlide() {
+            showSlide(currentSlide - 1);
+        }
+        
+        // 키보드 네비게이션
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'ArrowRight' || e.key === ' ') {
+                nextSlide();
+            } else if (e.key === 'ArrowLeft') {
+                prevSlide();
+            }
+        });
+        
+        // 터치/스와이프 지원
+        let startX = 0;
+        let endX = 0;
+        
+        document.addEventListener('touchstart', function(e) {
+            startX = e.touches[0].clientX;
+        });
+        
+        document.addEventListener('touchend', function(e) {
+            endX = e.changedTouches[0].clientX;
+            if (startX - endX > 50) {
+                nextSlide();
+            } else if (endX - startX > 50) {
+                prevSlide();
+            }
+        });
+    </script>
+</body>
+</html>

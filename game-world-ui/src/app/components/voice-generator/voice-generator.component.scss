@@ -1,0 +1,1071 @@
+.voice-generator {
+  background: var(--bg-card);
+  border: 1px solid var(--border-primary);
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: var(--shadow-lg);
+  color: var(--text-primary);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  max-width: 800px;
+  margin: 20px auto;
+
+  // ==================== 헤더 섹션 ====================
+  .header-section {
+    text-align: center;
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 2px solid var(--border-primary);
+
+    h3 {
+      margin: 0 0 8px 0;
+      font-size: 24px;
+      color: var(--text-accent);
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+    }
+
+    .npc-context {
+      .npc-info {
+        background: var(--bg-secondary);
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-size: 14px;
+        color: var(--text-secondary);
+        border: 1px solid var(--border-secondary);
+      }
+    }
+  }
+
+  // ==================== 서버 상태 ====================
+  .server-status {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    font-size: 14px;
+    transition: all 0.3s ease;
+
+    &.healthy {
+      background: rgba(16, 185, 129, 0.1);
+      border: 1px solid var(--success-color);
+    }
+
+    &.unhealthy {
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid var(--danger-color);
+    }
+
+    .status-indicator {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+
+      .status-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        
+        &.green {
+          background: var(--success-color);
+          box-shadow: 0 0 8px rgba(16, 185, 129, 0.6);
+        }
+        
+        &.red {
+          background: var(--danger-color);
+          box-shadow: 0 0 8px rgba(239, 68, 68, 0.6);
+        }
+      }
+
+      .status-text {
+        font-weight: 500;
+        color: var(--text-secondary);
+      }
+    }
+
+    .status-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .refresh-btn,
+    .test-btn {
+      background: transparent;
+      border: 1px solid var(--border-secondary);
+      color: var(--text-accent);
+      padding: 6px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-size: 14px;
+
+      &:hover:not(:disabled) {
+        background: var(--bg-tertiary);
+        border-color: var(--accent-color);
+        color: var(--accent-color);
+        transform: scale(1.05);
+      }
+
+      &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+    }
+
+    .test-btn {
+      font-size: 12px;
+      padding: 4px 8px;
+      
+      &:hover:not(:disabled) {
+        background: rgba(59, 130, 246, 0.1);
+        border-color: var(--info-color);
+        color: var(--info-color);
+      }
+    }
+  }
+
+  // ==================== 메시지 섹션 ====================
+  .message-section {
+    margin-bottom: 20px;
+
+    .error-message,
+    .success-message {
+      padding: 12px 16px;
+      border-radius: 8px;
+      font-size: 14px;
+      cursor: pointer;
+      transition: opacity 0.2s ease;
+      line-height: 1.4;
+
+      &:hover {
+        opacity: 0.8;
+      }
+    }
+
+    .error-message {
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid var(--danger-color);
+      color: #fecaca;
+    }
+
+    .success-message {
+      background: rgba(16, 185, 129, 0.1);
+      border: 1px solid var(--success-color);
+      color: #a7f3d0;
+    }
+  }
+
+  // ==================== NPC 선택 ====================
+  .npc-selection {
+    margin-bottom: 24px;
+
+    h4 {
+      margin: 0 0 16px 0;
+      font-size: 18px;
+      color: var(--text-accent);
+      font-weight: 600;
+    }
+
+    .current-npc {
+      background: var(--bg-secondary);
+      border: 2px solid var(--accent-color);
+      border-radius: 8px;
+      padding: 16px;
+      margin-bottom: 16px;
+
+      .selected-npc-info {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+
+        .npc-name {
+          font-size: 18px;
+          font-weight: 600;
+          color: var(--accent-color);
+        }
+
+        .npc-role {
+          font-size: 14px;
+          color: var(--text-secondary);
+          font-style: italic;
+        }
+
+        .clear-npc-btn {
+          background: transparent;
+          border: 1px solid var(--danger-color);
+          color: var(--danger-color);
+          padding: 4px 8px;
+          border-radius: 4px;
+          cursor: pointer;
+          margin-left: auto;
+          transition: all 0.2s ease;
+
+          &:hover {
+            background: var(--danger-color);
+            color: white;
+          }
+        }
+      }
+    }
+
+    .npcs-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 12px;
+      max-height: 300px;
+      overflow-y: auto;
+      padding: 8px;
+      border: 1px solid var(--border-primary);
+      border-radius: 8px;
+      background: var(--bg-secondary);
+
+      &::-webkit-scrollbar {
+        width: 8px;
+      }
+
+      &::-webkit-scrollbar-track {
+        background: var(--bg-primary);
+        border-radius: 4px;
+      }
+
+      &::-webkit-scrollbar-thumb {
+        background: var(--border-secondary);
+        border-radius: 4px;
+      }
+    }
+
+    .npc-card {
+      background: var(--bg-tertiary);
+      border: 2px solid var(--border-primary);
+      border-radius: 8px;
+      padding: 16px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      position: relative;
+
+      &:hover {
+        border-color: var(--accent-color);
+        background: var(--bg-surface);
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
+      }
+
+      .npc-info {
+        .npc-name {
+          font-weight: 600;
+          font-size: 16px;
+          color: var(--text-primary);
+          margin-bottom: 8px;
+        }
+
+        .npc-details {
+          display: flex;
+          gap: 12px;
+          margin-bottom: 8px;
+          font-size: 12px;
+
+          .npc-role {
+            color: var(--accent-color);
+            font-weight: 500;
+          }
+
+          .npc-type {
+            color: var(--text-muted);
+          }
+        }
+
+        .npc-description {
+          font-size: 12px;
+          color: var(--text-secondary);
+          line-height: 1.3;
+          max-height: 60px;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+      }
+    }
+
+    .no-npcs {
+      text-align: center;
+      padding: 40px 20px;
+      color: var(--text-muted);
+      font-size: 14px;
+    }
+  }
+
+  // ==================== 음성 배우 선택 ====================
+  .actor-selection {
+    margin-bottom: 24px;
+
+    h4 {
+      margin: 0 0 16px 0;
+      font-size: 18px;
+      color: var(--text-accent);
+      font-weight: 600;
+    }
+
+    .loading-indicator {
+      text-align: center;
+      padding: 20px;
+      font-size: 16px;
+      color: var(--text-secondary);
+
+      .spinner {
+        display: inline-block;
+        animation: spin 1s linear infinite;
+      }
+    }
+
+    .actors-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 12px;
+      max-height: 300px;
+      overflow-y: auto;
+      padding: 8px;
+      border: 1px solid var(--border-primary);
+      border-radius: 8px;
+      background: var(--bg-secondary);
+
+      &::-webkit-scrollbar {
+        width: 8px;
+      }
+
+      &::-webkit-scrollbar-track {
+        background: var(--bg-primary);
+        border-radius: 4px;
+      }
+
+      &::-webkit-scrollbar-thumb {
+        background: var(--border-secondary);
+        border-radius: 4px;
+      }
+    }
+
+    .actor-card {
+      background: var(--bg-tertiary);
+      border: 2px solid var(--border-primary);
+      border-radius: 8px;
+      padding: 12px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      position: relative;
+
+      &:hover {
+        border-color: var(--border-secondary);
+        background: var(--bg-surface);
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
+      }
+
+      &.selected {
+        border-color: var(--accent-color);
+        background: rgba(245, 158, 11, 0.1);
+        box-shadow: 0 0 12px rgba(245, 158, 11, 0.3);
+      }
+
+      .actor-info {
+        .actor-name {
+          font-weight: 600;
+          font-size: 16px;
+          color: var(--text-primary);
+          margin-bottom: 6px;
+        }
+
+        .actor-details {
+          display: flex;
+          gap: 12px;
+          margin-bottom: 8px;
+          font-size: 12px;
+
+          .gender {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            color: var(--text-muted);
+
+            &.male {
+              color: var(--success-color);
+            }
+
+            &.female {
+              color: #f472b6;
+            }
+          }
+
+          .file-count {
+            color: var(--text-muted);
+          }
+        }
+
+        .actor-description {
+          font-size: 12px;
+          color: var(--text-secondary);
+          line-height: 1.3;
+        }
+
+        .sample-controls {
+          margin-top: 8px;
+          
+          .sample-btn {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid var(--success-color);
+            color: var(--success-color);
+            padding: 4px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 11px;
+            transition: all 0.2s ease;
+            width: 100%;
+            
+            &:hover {
+              background: rgba(16, 185, 129, 0.2);
+              transform: translateY(-1px);
+            }
+            
+            &:active {
+              transform: translateY(0);
+            }
+            
+            &.playing {
+              background: rgba(245, 158, 11, 0.1);
+              border-color: var(--warning-color);
+              color: var(--warning-color);
+              animation: pulse 1.5s ease-in-out infinite;
+              
+              &:hover {
+                background: rgba(245, 158, 11, 0.2);
+              }
+            }
+          }
+        }
+      }
+
+      .selection-indicator {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        background: var(--accent-color);
+        color: var(--bg-primary);
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+        font-weight: bold;
+      }
+    }
+
+    .no-actors {
+      text-align: center;
+      padding: 40px 20px;
+      color: var(--text-muted);
+
+      .refresh-actors-btn {
+        background: var(--bg-tertiary);
+        border: 1px solid var(--border-secondary);
+        color: var(--text-accent);
+        padding: 8px 16px;
+        border-radius: 6px;
+        cursor: pointer;
+        margin-top: 12px;
+        transition: all 0.2s ease;
+
+        &:hover {
+          background: var(--bg-surface);
+          border-color: var(--accent-color);
+          color: var(--accent-color);
+        }
+      }
+    }
+  }
+
+  // ==================== 텍스트 입력 ====================
+  .text-input-section {
+    margin-bottom: 24px;
+
+    h4 {
+      margin: 0 0 12px 0;
+      font-size: 18px;
+      color: var(--text-accent);
+      font-weight: 600;
+    }
+
+    .input-container {
+      .text-input {
+        width: 100%;
+        min-height: 100px;
+        background: var(--bg-secondary);
+        border: 2px solid var(--border-primary);
+        border-radius: 8px;
+        padding: 12px;
+        font-size: 14px;
+        color: var(--text-primary);
+        font-family: inherit;
+        resize: vertical;
+        transition: border-color 0.3s ease;
+
+        &:focus {
+          outline: none;
+          border-color: var(--accent-color);
+          box-shadow: 0 0 8px rgba(245, 158, 11, 0.3);
+        }
+
+        &::placeholder {
+          color: var(--text-muted);
+        }
+
+        &:disabled {
+          opacity: 0.6;
+          cursor: not-allowed;
+        }
+      }
+
+      .input-actions {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 8px;
+
+        .test-btn {
+          background: var(--bg-tertiary);
+          border: 1px solid var(--border-secondary);
+          color: var(--text-secondary);
+          padding: 6px 12px;
+          border-radius: 6px;
+          cursor: pointer;
+          font-size: 12px;
+          transition: all 0.2s ease;
+
+          &:hover:not(:disabled) {
+            background: var(--bg-surface);
+            color: var(--text-primary);
+            transform: scale(1.05);
+          }
+
+          &:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+          }
+        }
+
+        .char-count {
+          font-size: 12px;
+          color: var(--text-muted);
+        }
+      }
+    }
+  }
+
+  // ==================== 음성 설정 ====================
+  .voice-settings {
+    margin-bottom: 24px;
+
+    h4 {
+      margin: 0 0 16px 0;
+      font-size: 18px;
+      color: var(--text-accent);
+      font-weight: 600;
+    }
+
+    .settings-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      background: var(--bg-secondary);
+      padding: 16px;
+      border-radius: 8px;
+      border: 1px solid var(--border-primary);
+    }
+
+    .setting-item {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+
+      label {
+        font-size: 14px;
+        font-weight: 500;
+        color: var(--text-primary);
+      }
+
+      .slider {
+        -webkit-appearance: none;
+        appearance: none;
+        height: 6px;
+        background: var(--bg-secondary);
+        border-radius: 3px;
+        outline: none;
+        transition: background 0.3s ease;
+
+        &::-webkit-slider-thumb {
+          -webkit-appearance: none;
+          appearance: none;
+          width: 18px;
+          height: 18px;
+          background: var(--accent-color);
+          border-radius: 50%;
+          cursor: pointer;
+          box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+          transition: all 0.2s ease;
+
+          &:hover {
+            background: var(--accent-color);
+            transform: scale(1.1);
+          }
+        }
+
+        &::-moz-range-thumb {
+          width: 18px;
+          height: 18px;
+          background: var(--accent-color);
+          border-radius: 50%;
+          cursor: pointer;
+          border: none;
+          box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+        }
+
+        &:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
+
+          &::-webkit-slider-thumb {
+            cursor: not-allowed;
+          }
+        }
+      }
+
+      .emotion-select {
+        background: var(--bg-secondary);
+        border: 1px solid var(--border-primary);
+        color: var(--text-primary);
+        padding: 8px 12px;
+        border-radius: 6px;
+        font-size: 14px;
+        cursor: pointer;
+
+        &:focus {
+          outline: none;
+          border-color: var(--accent-color);
+        }
+
+        &:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
+        }
+      }
+    }
+  }
+
+  // ==================== 음성 생성 ====================
+  .generation-section {
+    margin-bottom: 24px;
+    text-align: center;
+
+    .generate-btn {
+      background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+      border: 2px solid var(--accent-color);
+      color: white;
+      padding: 14px 32px;
+      border-radius: 25px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+      box-shadow: 0 4px 16px rgba(139, 69, 19, 0.4);
+
+      &:hover:not(:disabled) {
+        background: linear-gradient(135deg, #a0522d, #daa520);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(139, 69, 19, 0.6);
+      }
+
+      &:active:not(:disabled) {
+        transform: translateY(0);
+      }
+
+      &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        transform: none;
+      }
+
+      &.generating {
+        background: linear-gradient(135deg, #795548, #8d6e63);
+        animation: pulse 1.5s ease-in-out infinite;
+      }
+
+      .spinner {
+        display: inline-block;
+        animation: spin 1s linear infinite;
+      }
+    }
+
+    .generation-info {
+      margin-top: 16px;
+      padding: 12px;
+      background: var(--bg-secondary);
+      border-radius: 8px;
+      border: 1px solid var(--border-primary);
+
+      .selected-actor {
+        font-size: 14px;
+        color: var(--text-primary);
+        margin-bottom: 6px;
+      }
+
+      .text-preview {
+        font-size: 12px;
+        color: var(--text-secondary);
+        font-style: italic;
+        line-height: 1.3;
+      }
+    }
+  }
+
+  // ==================== 오디오 섹션 ====================
+  .audio-section {
+    margin-bottom: 24px;
+
+    h4 {
+      margin: 0 0 16px 0;
+      font-size: 18px;
+      color: var(--text-accent);
+      font-weight: 600;
+    }
+
+    .audio-player {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 16px;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-primary);
+      border-radius: 8px;
+
+      .audio-element {
+        flex: 1;
+        max-width: 300px;
+        height: 40px;
+      }
+
+      .audio-controls {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        flex-wrap: wrap;
+
+        button {
+          background: var(--bg-tertiary);
+          border: 1px solid var(--border-primary);
+          color: var(--text-primary);
+          padding: 8px 12px;
+          border-radius: 6px;
+          cursor: pointer;
+          font-size: 12px;
+          transition: all 0.2s ease;
+          white-space: nowrap;
+
+          &:hover {
+            background: var(--bg-surface);
+            transform: translateY(-1px);
+          }
+
+          &:active {
+            transform: translateY(0);
+          }
+
+          &.play-btn {
+            background: var(--bg-tertiary);
+            border-color: var(--accent-color);
+            color: var(--accent-color);
+
+            &:hover {
+              background: var(--bg-surface);
+            }
+          }
+
+          &.pause-btn {
+            background: var(--bg-tertiary);
+            border-color: var(--accent-color);
+            color: var(--accent-color);
+
+            &:hover {
+              background: var(--bg-surface);
+            }
+          }
+
+          &.download-btn {
+            background: var(--bg-tertiary);
+            border-color: var(--accent-color);
+            color: var(--accent-color);
+
+            &:hover {
+              background: var(--bg-surface);
+            }
+          }
+
+          &.test-url-btn {
+            background: var(--bg-tertiary);
+            border-color: var(--accent-color);
+            color: var(--accent-color);
+            font-size: 11px;
+
+            &:hover {
+              background: var(--bg-surface);
+            }
+          }
+
+          &.debug-btn {
+            background: var(--bg-tertiary);
+            border-color: var(--accent-color);
+            color: var(--accent-color);
+            font-size: 11px;
+
+            &:hover {
+              background: var(--bg-surface);
+            }
+          }
+
+          &.force-play-btn {
+            background: var(--bg-tertiary);
+            border-color: var(--accent-color);
+            color: var(--accent-color);
+            font-size: 11px;
+
+            &:hover {
+              background: var(--bg-surface);
+            }
+          }
+        }
+      }
+    }
+
+    .audio-info {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--text-muted);
+
+      .actor-used {
+        font-weight: 500;
+      }
+
+      .generation-time {
+        font-style: italic;
+      }
+    }
+  }
+
+  // ==================== 서버 연결 불가 ====================
+  .server-unavailable {
+    text-align: center;
+    padding: 40px 20px;
+
+    .unavailable-content {
+      h4 {
+        margin: 0 0 16px 0;
+        font-size: 20px;
+        color: var(--danger-color);
+      }
+
+      p {
+        font-size: 16px;
+        color: var(--text-secondary);
+        margin-bottom: 24px;
+      }
+
+      .troubleshooting {
+        text-align: left;
+        background: var(--bg-secondary);
+        padding: 16px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        border: 1px solid var(--border-primary);
+
+        h5 {
+          margin: 0 0 12px 0;
+          font-size: 14px;
+          color: var(--text-accent);
+        }
+
+        ol {
+          margin: 0;
+          padding-left: 20px;
+          color: var(--text-muted);
+
+          li {
+            margin-bottom: 6px;
+            font-size: 14px;
+            line-height: 1.4;
+          }
+        }
+      }
+
+      .retry-btn {
+        background: var(--bg-tertiary);
+        border: 1px solid var(--accent-color);
+        color: var(--accent-color);
+        padding: 10px 20px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 14px;
+        transition: all 0.2s ease;
+
+        &:hover {
+          background: var(--bg-surface);
+        }
+      }
+    }
+  }
+
+  // ==================== 도움말 ====================
+  .help-section {
+    margin-top: 24px;
+    border-top: 1px solid var(--border-primary);
+    padding-top: 20px;
+
+    .help-details {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-primary);
+      border-radius: 8px;
+      
+      summary {
+        padding: 12px 16px;
+        cursor: pointer;
+        font-weight: 500;
+        color: var(--text-accent);
+        user-select: none;
+        transition: background-color 0.2s ease;
+
+        &:hover {
+          background: var(--bg-tertiary);
+        }
+      }
+
+      .help-content {
+        padding: 0 16px 16px 16px;
+        color: var(--text-muted);
+        line-height: 1.5;
+
+        ol, ul {
+          padding-left: 20px;
+        }
+
+        li {
+          margin-bottom: 6px;
+          font-size: 14px;
+        }
+
+        .tips {
+          margin-top: 16px;
+          padding: 12px;
+          background: var(--bg-tertiary);
+          border-radius: 6px;
+          border: 1px solid var(--border-primary);
+
+          h6 {
+            margin: 0 0 8px 0;
+            color: var(--text-accent);
+            font-size: 14px;
+          }
+
+          ul {
+            margin: 0;
+          }
+        }
+      }
+    }
+  }
+
+  // ==================== 애니메이션 ====================
+  @keyframes spin {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  @keyframes pulse {
+    0%, 100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.7;
+    }
+  }
+
+  // ==================== 반응형 디자인 ====================
+  @media (max-width: 768px) {
+    padding: 16px;
+    margin: 10px;
+
+    .actors-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .settings-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .audio-player {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 16px;
+
+      .audio-element {
+        width: 100%;
+        max-width: none;
+      }
+
+      .audio-controls {
+        justify-content: center;
+        
+        button {
+          padding: 10px 14px;
+          font-size: 13px;
+        }
+      }
+    }
+
+    .generation-section .generate-btn {
+      padding: 12px 24px;
+      font-size: 14px;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .header-section h3 {
+      font-size: 20px;
+    }
+
+    .server-status {
+      flex-direction: column;
+      gap: 8px;
+      text-align: center;
+    }
+
+    .help-content ol,
+    .help-content ul {
+      padding-left: 16px;
+    }
+
+    .audio-player .audio-controls {
+      button {
+        padding: 8px 10px;
+        font-size: 11px;
+        
+        &.test-url-btn {
+          font-size: 10px;
+        }
+      }
+    }
+  }
+} 

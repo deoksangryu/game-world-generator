@@ -1,0 +1,18 @@
+<div class="npc-toolbar">
+  <select [(ngModel)]="selectedRole" class="filter-select">
+    <option *ngFor="let r of roles" [ngValue]="r">{{ r }}</option>
+  </select>
+  <input class="search-input" [(ngModel)]="searchTerm" placeholder="검색" />
+</div>
+
+<div class="npc-grid">
+  <div class="npc-card" *ngFor="let npc of filtered" (click)="select(npc)">
+    <div class="npc-header" [title]="npc.role">
+      <span class="npc-role-icon">{{ getRoleIcon(npc.role || '') }}</span>
+    </div>
+    <div class="npc-content">
+      <div class="npc-name">{{ npc.name }}</div>
+      <div class="npc-personality">{{ npc.personality }}</div>
+    </div>
+  </div>
+</div> 

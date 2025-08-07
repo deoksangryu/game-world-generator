@@ -1,0 +1,478 @@
+<!-- 
+====================================
+채팅 인터페이스 컴포넌트 템플릿
+====================================
+선택된 NPC와 실시간 채팅을 할 수 있는 인터페이스입니다.
+
+주요 구성:
+1. 서버 연결 상태 표시
+2. 채팅 메시지 영역 - 대화 히스토리 표시
+3. 환영 메시지 - 첫 대화 시 안내 메시지
+4. 타이핑 표시 - NPC가 응답 중일 때 표시
+5. 퀘스트 제공 다이얼로그
+6. 메시지 입력창 - 사용자 메시지 작성 및 전송
+7. 빈 상태 - NPC가 선택되지 않았을 때 표시
+-->
+
+<div class="chat-interface-container">
+  
+  <!-- ==================== NPC 선택 영역 ==================== -->
+  <div class="npc-selector-container">
+    <div class="npc-selector-header">
+      <h3 class="selector-title">
+        <span class="title-icon">👥</span>
+        Choose Character to Chat
+      </h3>
+      <div class="selector-subtitle">Select an NPC to start or continue your conversation</div>
+    </div>
+    
+    <div class="npc-selector-grid">
+      <div 
+        *ngFor="let npc of getAvailableNPCs()"
+        class="npc-selector-card"
+        [class.selected]="isNPCSelected(npc)"
+        [class.has-history]="hasConversationHistory(npc)"
+        (click)="selectNPC(npc)">
+        
+        <!-- NPC 이미지 -->
+        <div class="npc-card-image">
+          <img 
+            [src]="npc.imageUrl || '/assets/images/default-npc.png'"
+            [alt]="npc.name"
+            class="npc-avatar"
+            (error)="onImageError($event)">
+          
+          <!-- 대화 기록 있음 표시 -->
+          <div class="history-indicator" *ngIf="hasConversationHistory(npc)">
+            <span class="history-icon">💬</span>
+          </div>
+          
+          <!-- 선택됨 표시 -->
+          <div class="selected-indicator" *ngIf="isNPCSelected(npc)">
+            <span class="selected-icon">✓</span>
+          </div>
+        </div>
+        
+        <!-- NPC 정보 -->
+        <div class="npc-card-info">
+          <h4 class="npc-name">{{ npc.name }}</h4>
+          <p class="npc-role" *ngIf="npc.role">{{ npc.role }}</p>
+          <p class="npc-personality">{{ npc.personality }}</p>
+          
+          <!-- 마지막 대화 시간 -->
+          <div class="last-conversation" *ngIf="getLastConversationTime(npc)">
+            <span class="last-conversation-label">Last chat:</span>
+            <span class="last-conversation-time">{{ formatTime(getLastConversationTime(npc)!) }}</span>
+          </div>
+          
+          <!-- 음성 배우 정보 -->
+          <div class="voice-status">
+            <span class="voice-icon" [class.has-voice]="npc.voiceActor">
+              {{ npc.voiceActor ? '🎤' : '🔇' }}
+            </span>
+            <span class="voice-label">
+              {{ npc.voiceActor ? npc.voiceActor : 'No voice' }}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== 채팅 영역 (NPC 선택 시만 표시) ==================== -->
+  <div class="chat-content" *ngIf="selectedNPC">
+    <!-- 전체 채팅 영역을 좌측 프로필과 우측 채팅으로 분할 -->
+    <div class="chat-layout">
+    
+    <!-- ==================== 좌측 NPC 프로필 영역 ==================== -->
+    <div class="npc-profile-section">
+      <div class="npc-profile-card">
+        <!-- NPC 이미지 -->
+        <div class="npc-image-container">
+          <!-- SadTalker 비디오가 있고 재생 중일 때 표시 -->
+          <video 
+            *ngIf="isShowingTalkingVideo() && getTalkingVideoUrl()"
+            [src]="getTalkingVideoUrl()"
+            class="npc-talking-video"
+            autoplay
+            muted
+            loop
+            (ended)="onTalkingVideoEnded()"
+            (error)="onTalkingVideoError($event)">
+          </video>
+          
+          <!-- 기본 NPC 이미지 (비디오가 없거나 재생되지 않을 때) -->
+          <img 
+            *ngIf="!isShowingTalkingVideo() && selectedNPC.imageUrl" 
+            [src]="selectedNPC.imageUrl" 
+            [alt]="selectedNPC.name"
+            class="npc-image"
+            (error)="onImageError($event)"
+          />
+          
+          <!-- 이미지 플레이스홀더 -->
+          <div 
+            *ngIf="!isShowingTalkingVideo() && !selectedNPC.imageUrl" 
+            class="npc-image-placeholder">
+            {{ selectedNPC.name.charAt(0) }}
+          </div>
+          
+          <!-- 비디오 생성 중 표시 -->
+          <div 
+            *ngIf="isGeneratingTalkingVideo()" 
+            class="video-generating-overlay">
+            <div class="generating-icon">🎬</div>
+            <div class="generating-text">비디오 생성 중...</div>
+            <div class="generating-dots">
+              <span class="dot"></span>
+              <span class="dot"></span>
+              <span class="dot"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- ==================== 우측 채팅 영역 ==================== -->
+    <div class="chat-section">
+      
+      <!-- ==================== 서버 연결 상태 ==================== -->
+      <div class="server-status-bar" [class]="connectionStatus">
+        <div class="status-indicator">
+          <span class="status-dot" [class.connected]="isServerConnected"></span>
+          <span class="status-text">
+            {{ isServerConnected ? 'NPC 서버 연결됨' : 'NPC 서버 연결 안됨' }}
+          </span>
+          <!-- 디버깅용 타이핑 상태 표시 -->
+          <span class="debug-info" *ngIf="isTyping" style="margin-left: 1rem; color: var(--accent-color); font-size: 0.8rem;">
+            🤖 응답 생성 중...
+          </span>
+          <!-- 디버깅용 퀘스트 상태 표시 -->
+          <span class="debug-info" *ngIf="showQuestDialog" style="margin-left: 1rem; color: var(--quest-color); font-size: 0.8rem;">
+            🗡️ 퀘스트 대기 중...
+          </span>
+        </div>
+        <div class="control-buttons">
+          <button class="clear-session-btn" (click)="clearSession()" *ngIf="isServerConnected && chatMessages.length > 0">
+            🗑️ 대화 초기화
+          </button>
+          <!-- 디버깅용 퀘스트 테스트 버튼 -->
+          <button class="test-quest-btn" (click)="testQuestDialog()" *ngIf="isServerConnected" style="margin-left: 0.5rem;">
+            🧪 퀘스트 테스트
+          </button>
+        </div>
+      </div>
+
+      <!-- ==================== 미디어 생성 큐 상태 ==================== -->
+      <div class="queue-status-bar" *ngIf="isServerConnected && (getQueueSize() > 0 || isQueueProcessing())">
+        <div class="queue-info">
+          <span class="queue-icon">⚙️</span>
+          <span class="queue-text">{{ getQueueStatusText() }}</span>
+          
+          <!-- 병렬 처리 상태 표시 -->
+          <div class="parallel-processing" *ngIf="isParallelProcessing()">
+            <span class="parallel-icon">🔄</span>
+            <span class="parallel-text">병렬 처리 중</span>
+          </div>
+          
+          <!-- 개별 처리 상태 표시 -->
+          <div class="processing-indicators">
+            <div class="voice-processing" *ngIf="isVoiceProcessing()">
+              <span class="processing-type">🎵</span>
+              <span class="processing-message">음성 생성 중</span>
+            </div>
+            <div class="video-processing" *ngIf="isVideoProcessing()">
+              <span class="processing-type">🎬</span>
+              <span class="processing-message">비디오 생성 중</span>
+            </div>
+          </div>
+          
+          <!-- 대기 큐 상세 정보 -->
+          <div class="queue-details" *ngIf="getQueueSize() > 0">
+            <span class="queue-detail voice-queue" *ngIf="getVoiceQueueCount() > 0">
+              🎵 음성: {{ getVoiceQueueCount() }}
+            </span>
+            <span class="queue-detail video-queue" *ngIf="getVideoQueueCount() > 0">
+              🎬 비디오: {{ getVideoQueueCount() }}
+            </span>
+          </div>
+        </div>
+        
+        <div class="queue-controls">
+          <button class="clear-queue-btn" (click)="clearQueue()" title="큐 초기화">
+            🗑️ 큐 초기화
+          </button>
+        </div>
+      </div>
+
+      <!-- ==================== 채팅 메시지 영역 ==================== -->
+      <div class="chat-messages" #chatContainer>
+        <div class="messages-container">
+          <!-- ==================== 환영 메시지 ==================== -->
+          <!-- 대화가 시작되지 않았을 때 표시되는 안내 메시지 -->
+          <div class="welcome-message" *ngIf="chatMessages.length === 0">
+            <div class="welcome-content">
+              <h4>🎭 Begin Your Conversation</h4>
+              <p>{{ selectedNPC.name }} awaits your words. What would you like to discuss?</p>
+              <!-- 캐릭터의 성격 특성 힌트 -->
+              <div class="character-hint">
+                <strong>Character Trait:</strong> {{ selectedNPC.personality }}
+              </div>
+              <div class="character-hint" *ngIf="selectedNPC.role">
+                <strong>Role:</strong> {{ selectedNPC.role }}
+              </div>
+              <!-- 음성 배우 정보 표시 -->
+              <div class="voice-info" *ngIf="selectedNPC.voiceActor">
+                <div class="voice-actor-display">
+                  <span class="voice-icon">🎤</span>
+                  <div class="voice-details">
+                    <span class="voice-label">Voice Actor:</span>
+                    <span class="voice-name">{{ selectedNPC.voiceActor }}</span>
+                    <span class="voice-style" *ngIf="selectedNPC.voiceStyle">({{ selectedNPC.voiceStyle }})</span>
+                  </div>
+                </div>
+              </div>
+              <div class="voice-info" *ngIf="!selectedNPC.voiceActor">
+                <div class="voice-actor-display no-voice">
+                  <span class="voice-icon">🔇</span>
+                  <div class="voice-details">
+                    <span class="voice-label">음성 배우가 설정되지 않았습니다.</span>
+                    <span class="voice-suggestion">음성 시스템에서 목소리를 설정해보세요!</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ==================== 채팅 메시지 목록 ==================== -->
+          <!-- 사용자와 NPC의 실제 대화 메시지들 -->
+          <div 
+            *ngFor="let message of chatMessages" 
+            class="message"
+            [class.user-message]="message.sender === 'user'"
+            [class.npc-message]="message.sender === 'npc'">
+            
+            <!-- NPC 메시지용 talking video 영역 -->
+            <div class="npc-video-section" *ngIf="message.sender === 'npc'">
+              <!-- 기본 NPC 이미지 (항상 표시) -->
+              <div class="npc-avatar-container">
+                <img 
+                  [src]="selectedNPC?.imageUrl || '/assets/images/default-npc.png'" 
+                  [alt]="selectedNPC?.name || 'NPC'"
+                  class="message-npc-avatar"
+                  (error)="onImageError($event)"
+                />
+                
+                <!-- 상태 인디케이터 -->
+                <div class="avatar-indicator">
+                  <span class="chat-icon" *ngIf="!message.talkingVideoUrl">💬</span>
+                  <span class="video-icon" *ngIf="message.talkingVideoUrl">🎬</span>
+                  <span class="generating-icon" *ngIf="message.isGeneratingVideo">⚙️</span>
+                </div>
+              </div>
+            </div>
+            
+            <div class="message-content">
+              <!-- 메시지 말풍선 -->
+              <div class="message-bubble">
+                <!-- NPC 감정 표시 -->
+                <div class="message-header" *ngIf="message.sender === 'npc' && message.emotion">
+                  <span class="emotion-indicator">
+                    {{ getEmotionEmoji(message.emotion) }} {{ message.emotion }}
+                  </span>
+                  <!-- NPC 음성 배우 표시 -->
+                  <span class="voice-indicator" *ngIf="selectedNPC.voiceActor">
+                    🎤 {{ selectedNPC.voiceActor }}
+                  </span>
+                  <!-- 비디오 상태 표시 -->
+                  <span class="video-indicator" *ngIf="message.talkingVideoUrl">
+                    🎬 비디오 AI 모델
+                  </span>
+                </div>
+                
+                <p class="message-text">{{ message.content }}</p>
+                
+                <!-- 음성 및 비디오 컨트롤 (NPC 메시지만) -->
+                <div class="media-controls" *ngIf="message.sender === 'npc'">
+                  <!-- 미디어 생성 버튼들 -->
+                  <div class="generation-buttons" *ngIf="selectedNPC.voiceActor">
+                    <!-- 음성 생성 버튼 -->
+                    <button 
+                      class="generate-voice-btn"
+                      *ngIf="getAvailableMediaActions(message).canGenerateVoice"
+                      (click)="generateVoice(message)"
+                      title="음성 생성">
+                      🎵 음성 생성
+                    </button>
+                    
+                    <!-- 비디오 생성 버튼 -->
+                    <button 
+                      class="generate-video-btn"
+                      *ngIf="getAvailableMediaActions(message).canGenerateVideo"
+                      (click)="generateVideo(message)"
+                      title="비디오 생성">
+                      🎬 비디오 생성
+                    </button>
+                    
+                    <!-- 전체 생성 버튼 -->
+                    <button 
+                      class="generate-all-btn"
+                      *ngIf="getAvailableMediaActions(message).canGenerateAll"
+                      (click)="generateAllMedia(message)"
+                      title="음성과 비디오 모두 생성">
+                      🎭 전체 생성
+                    </button>
+                  </div>
+                  
+                  <!-- 음성 배우 없음 안내 -->
+                  <div class="no-voice-actor" *ngIf="!selectedNPC.voiceActor">
+                    <span class="info-icon">ℹ️</span>
+                    <span class="info-text">음성 배우가 설정되지 않았습니다</span>
+                  </div>
+                  
+                  <!-- 음성 생성 중 표시 -->
+                  <div class="voice-generating" *ngIf="message.isGeneratingVoice">
+                    <span class="generating-icon">🎵</span>
+                    <span class="generating-text">음성 생성 중...</span>
+                    <div class="generating-dots">
+                      <span class="dot"></span>
+                      <span class="dot"></span>
+                      <span class="dot"></span>
+                    </div>
+                  </div>
+                  
+                  <!-- 음성 재생 버튼 -->
+                  <div class="voice-playback" *ngIf="message.voiceGenerated && message.voiceUrl">
+                    <button 
+                      class="voice-play-btn"
+                      [class.playing]="isMessageVoicePlaying(message.id)"
+                      (click)="playMessageVoice(message)"
+                      title="음성 재생/정지">
+                      <span class="play-icon" *ngIf="!isMessageVoicePlaying(message.id)">🔊</span>
+                      <span class="stop-icon" *ngIf="isMessageVoicePlaying(message.id)">🔇</span>
+                    </button>
+                    <span class="voice-status">음성 이용 가능</span>
+                  </div>
+                  
+                  <!-- 비디오 컨트롤 -->
+                  <div class="video-playback" *ngIf="message.talkingVideoUrl">
+                    <button 
+                      class="video-control-btn"
+                      [class.playing]="isPlayingInProfile(message)"
+                      (click)="toggleVideoPlayback(message)"
+                      title="프로필 영역에서 비디오 재생/정지">
+                      <span class="video-icon">🎬</span>
+                      <span class="control-text" *ngIf="!isPlayingInProfile(message)">재생</span>
+                      <span class="control-text" *ngIf="isPlayingInProfile(message)">정지</span>
+                    </button>
+                    <span class="video-status">
+                      {{ isPlayingInProfile(message) ? '프로필에서 재생 중' : '프로필에서 재생 가능' }}
+                    </span>
+                  </div>
+                  
+                  <!-- 미디어 상태 표시 -->
+                  <div class="media-status" *ngIf="getMediaStatusText(message)">
+                    <span class="status-icon">📊</span>
+                    <span class="status-text">{{ getMediaStatusText(message) }}</span>
+                  </div>
+                  
+                  <!-- 음성 생성 실패 표시 -->
+                  <div class="voice-failed" *ngIf="!message.isGeneratingVoice && !message.voiceGenerated && !message.isGeneratingVideo && !getAvailableMediaActions(message).canGenerateVoice">
+                    <span class="failed-icon">🔇</span>
+                    <span class="failed-text">음성 없음</span>
+                  </div>
+                </div>
+                
+                <!-- 퀘스트 제공 표시 -->
+                <div class="quest-preview" *ngIf="message.questOffer">
+                  <div class="quest-badge">🗡️ 퀘스트 제공됨</div>
+                  <div class="quest-title">{{ message.questOffer.title }}</div>
+                </div>
+                
+                <!-- 메시지 전송 시간 -->
+                <span class="message-time">{{ formatTime(message.timestamp) }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- ==================== 타이핑 표시 ==================== -->
+          <!-- NPC가 응답을 생성 중일 때 표시되는 애니메이션 -->
+          <span class="typing-compatible" *ngIf="isTyping"> 
+            <span class="typing-text">입력중</span>
+            <span class="dot"></span> 
+            <span class="dot"></span> 
+            <span class="dot"></span> 
+          </span>
+        </div>
+      </div>
+
+      <!-- ==================== 메시지 입력 영역 ==================== -->
+      <div class="chat-input">
+        <form (ngSubmit)="onSendMessage()" class="input-form">
+          <div class="input-container">
+            <!-- 메시지 입력 텍스트에어리어 -->
+            <textarea
+              #messageInput
+              [(ngModel)]="currentMessage"
+              name="message"
+              class="fantasy-input message-input"
+              placeholder="Type your message... (Enter to send, Shift+Enter for new line)"
+              (keyup)="onKeyPress($event)"
+              [disabled]="!isServerConnected || isSendingMessage"
+              rows="2">
+            </textarea>
+            
+            <!-- 메시지 전송 버튼 -->
+            <button 
+              type="submit" 
+              class="send-button"
+              [disabled]="!currentMessage.trim() || !isServerConnected || isSendingMessage">
+              <span class="send-icon" *ngIf="!isSendingMessage">📤</span>
+              <span class="sending-icon" *ngIf="isSendingMessage">⏳</span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  </div>
+
+  <!-- ==================== 퀘스트 제공 다이얼로그 ==================== -->
+  <div class="quest-dialog-overlay" *ngIf="showQuestDialog && pendingQuestOffer">
+    <div class="quest-dialog">
+      <div class="quest-header">
+        <h3>🗡️ 퀘스트 제공</h3>
+        <button class="close-btn" (click)="closeQuestDialog()">✕</button>
+      </div>
+      
+      <div class="quest-content">
+        <h4 class="quest-title">{{ pendingQuestOffer.title }}</h4>
+        <p class="quest-description">{{ pendingQuestOffer.description }}</p>
+        
+        <div class="quest-objectives">
+          <h5>목표:</h5>
+          <ul>
+            <li *ngFor="let objective of pendingQuestOffer.objectives">
+              {{ objective }}
+            </li>
+          </ul>
+        </div>
+        
+        <div class="quest-reward">
+          <h5>보상:</h5>
+          <p>{{ pendingQuestOffer.reward }}</p>
+        </div>
+      </div>
+      
+      <div class="quest-actions">
+        <button class="accept-btn" (click)="onAcceptQuest()">
+          ✅ 수락
+        </button>
+        <button class="reject-btn" (click)="onRejectQuest()">
+          ❌ 거절
+        </button>
+      </div>
+    </div>
+  </div>
+
+</div>

@@ -1,0 +1,1173 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>게임 세계관 작성 도구</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.8.3/angular.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #667eea 100%);
+            min-height: 100vh;
+            color: white;
+        }
+
+        .app-container { display: flex; min-height: 100vh; }
+
+        .sidebar {
+            width: 280px;
+            background: rgba(0,0,0,0.4);
+            backdrop-filter: blur(15px);
+            border-right: 1px solid rgba(255,255,255,0.1);
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            z-index: 1000;
+        }
+
+        .sidebar-header {
+            padding: 25px 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            text-align: center;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #fbbf24;
+            margin-bottom: 8px;
+        }
+
+        .nav-menu { padding: 20px 0; }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            padding: 15px 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-left: 4px solid transparent;
+        }
+
+        .nav-item:hover { background: rgba(255,255,255,0.1); border-left-color: #fbbf24; }
+        .nav-item.active { background: rgba(251, 191, 36, 0.2); border-left-color: #fbbf24; color: #fbbf24; }
+
+        .nav-icon { font-size: 1.2rem; margin-right: 12px; width: 20px; }
+        .nav-text { font-weight: 500; }
+
+        .main-content { flex: 1; margin-left: 280px; }
+
+        .top-bar {
+            background: rgba(0,0,0,0.3);
+            backdrop-filter: blur(10px);
+            padding: 15px 30px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .page-title { font-size: 1.5rem; font-weight: bold; color: #fbbf24; }
+
+        .action-btn {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+            margin-left: 10px;
+        }
+
+        .action-btn:hover { background: rgba(255,255,255,0.2); }
+
+        .content-area { padding: 30px; min-height: calc(100vh - 70px); }
+
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        .panel {
+            background: rgba(0,0,0,0.3);
+            border-radius: 20px;
+            padding: 30px;
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255,255,255,0.1);
+            margin-bottom: 20px;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #fbbf24;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* NPC 갤러리 */
+        .npc-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 25px;
+            margin-top: 20px;
+        }
+
+        .npc-card {
+            background: rgba(0,0,0,0.3);
+            border-radius: 20px;
+            overflow: hidden;
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255,255,255,0.1);
+            transition: all 0.3s ease;
+        }
+
+        .npc-card:hover {
+            transform: translateY(-8px);
+            border-color: rgba(251, 191, 36, 0.6);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        }
+
+        .npc-header {
+            position: relative;
+            height: 180px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .npc-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .npc-image-placeholder {
+            font-size: 4rem;
+            opacity: 0.7;
+        }
+
+        .npc-species-badge {
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            color: white;
+        }
+
+        .species-human { background: rgba(59, 130, 246, 0.9); }
+        .species-elf { background: rgba(34, 197, 94, 0.9); }
+        .species-dwarf { background: rgba(168, 85, 247, 0.9); }
+        .species-dragon { background: rgba(239, 68, 68, 0.9); }
+
+        .npc-level-badge {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: rgba(251, 191, 36, 0.9);
+            color: #1e293b;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .npc-voice-indicator {
+            position: absolute;
+            bottom: 12px;
+            right: 50px;
+            width: 30px;
+            height: 30px;
+            background: rgba(139, 92, 246, 0.9);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .npc-voice-indicator:hover { background: rgba(124, 58, 237, 1); transform: scale(1.1); }
+        .npc-voice-indicator.has-voice { background: rgba(34, 197, 94, 0.9); }
+
+        .npc-content { padding: 25px; }
+
+        .npc-name {
+            font-size: 1.4rem;
+            font-weight: bold;
+            color: #fbbf24;
+            margin-bottom: 5px;
+        }
+
+        .npc-basic-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            color: #94a3b8;
+            font-size: 0.9rem;
+        }
+
+        .npc-personality {
+            background: rgba(255,255,255,0.05);
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border-left: 3px solid #60a5fa;
+            color: #e5e7eb;
+            line-height: 1.4;
+            font-size: 0.9rem;
+        }
+
+        .npc-skills-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 15px;
+        }
+
+        .skill-tag {
+            background: rgba(34, 197, 94, 0.2);
+            color: #86efac;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+        }
+
+        .npc-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr 1fr;
+            gap: 8px;
+        }
+
+        .npc-action-btn {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            color: white;
+            padding: 10px 8px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.8rem;
+            text-align: center;
+        }
+
+        .npc-action-btn:hover { background: rgba(255,255,255,0.2); }
+
+        .generate-image-btn { background: linear-gradient(135deg, #8b5cf6, #7c3aed); }
+        .generate-voice-btn { background: linear-gradient(135deg, #10b981, #059669); }
+
+        /* 음성 모달 */
+        .voice-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            backdrop-filter: blur(10px);
+        }
+
+        .voice-modal-content {
+            background: rgba(0,0,0,0.9);
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .voice-modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .voice-modal-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #fbbf24;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 5px;
+            border-radius: 4px;
+        }
+
+        .close-btn:hover { background: rgba(255,255,255,0.1); }
+
+        .voice-base-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            margin: 15px 0;
+        }
+
+        .voice-base-card {
+            background: rgba(255,255,255,0.1);
+            border: 2px solid rgba(255,255,255,0.2);
+            border-radius: 12px;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .voice-base-card:hover { background: rgba(255,255,255,0.2); }
+        .voice-base-card.selected { background: rgba(251, 191, 36, 0.3); border-color: #fbbf24; }
+
+        .voice-base-icon { font-size: 2rem; margin-bottom: 8px; }
+        .voice-base-name { font-size: 0.9rem; font-weight: bold; color: #e5e7eb; }
+
+        .voice-textarea {
+            width: 100%;
+            min-height: 100px;
+            padding: 15px;
+            background: rgba(255,255,255,0.1);
+            border: 2px solid rgba(255,255,255,0.2);
+            border-radius: 12px;
+            color: white;
+            font-size: 1rem;
+            resize: vertical;
+            font-family: inherit;
+            line-height: 1.5;
+        }
+
+        .voice-textarea:focus { outline: none; border-color: #fbbf24; background: rgba(255,255,255,0.15); }
+        .voice-textarea::placeholder { color: rgba(255,255,255,0.6); }
+
+        .voice-generate-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+            border: none;
+            padding: 15px 20px;
+            border-radius: 12px;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 20px;
+        }
+
+        .voice-generate-btn:hover:not(:disabled) { background: linear-gradient(135deg, #7c3aed, #6d28d9); }
+        .voice-generate-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+        .voice-player {
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 20px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .voice-player-controls {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .voice-play-btn {
+            background: linear-gradient(135deg, #10b981, #059669);
+            border: none;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            color: white;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .voice-play-btn:hover { transform: scale(1.1); }
+
+        .loading-spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid transparent;
+            border-top: 2px solid #1e293b;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .form-label {
+            display: block;
+            font-weight: bold;
+            color: #e5e7eb;
+            margin-bottom: 8px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            opacity: 0.7;
+        }
+
+        .empty-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+        }
+
+        /* 세계관 생성 스타일 추가 */
+        .world-builder {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            max-width: 1400px;
+        }
+
+        .genre-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .genre-card {
+            background: rgba(255,255,255,0.1);
+            border: 2px solid rgba(255,255,255,0.2);
+            border-radius: 12px;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .genre-card:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+        .genre-card.selected {
+            background: rgba(251, 191, 36, 0.3);
+            border-color: #fbbf24;
+        }
+
+        .genre-icon {
+            font-size: 2rem;
+            margin-bottom: 8px;
+        }
+
+        .genre-name {
+            font-size: 0.9rem;
+            font-weight: bold;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px;
+            background: rgba(255,255,255,0.1);
+            border: 2px solid rgba(255,255,255,0.2);
+            border-radius: 8px;
+            color: white;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #fbbf24;
+            background: rgba(255,255,255,0.15);
+        }
+
+        .form-input::placeholder {
+            color: rgba(255,255,255,0.6);
+        }
+
+        .textarea {
+            resize: vertical;
+            min-height: 100px;
+            font-family: inherit;
+        }
+
+        .generate-btn {
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+            border: none;
+            padding: 15px 30px;
+            border-radius: 12px;
+            color: #1e293b;
+            font-weight: bold;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .generate-btn:hover:not(:disabled) {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            transform: translateY(-2px);
+        }
+
+        .generate-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        /* 세계 역사 스타일 */
+        .era-section {
+            margin-bottom: 40px;
+            border-left: 4px solid #fbbf24;
+            padding-left: 25px;
+            position: relative;
+        }
+
+        .era-section::before {
+            content: '';
+            position: absolute;
+            left: -10px;
+            top: 0;
+            width: 16px;
+            height: 16px;
+            background: #fbbf24;
+            border-radius: 50%;
+        }
+
+        .era-title {
+            font-size: 1.4rem;
+            font-weight: bold;
+            color: #fbbf24;
+            margin-bottom: 10px;
+        }
+
+        .era-timeframe {
+            color: #94a3b8;
+            font-size: 0.9rem;
+            margin-bottom: 15px;
+        }
+
+        .era-description {
+            color: #e5e7eb;
+            line-height: 1.6;
+        }
+            padding: 12px;
+            border-radius: 8px;
+            margin-top: 15px;
+            font-size: 0.9rem;
+        }
+
+        .error-message {
+            background: rgba(239, 68, 68, 0.2);
+            border: 1px solid #ef4444;
+            color: #fca5a5;
+        }
+
+        .success-message {
+            background: rgba(34, 197, 94, 0.2);
+            border: 1px solid #22c55e;
+            color: #86efac;
+        }
+    </style>
+</head>
+<body ng-app="worldBuilder" ng-controller="WorldController">
+    <div class="app-container">
+        <!-- 사이드바 -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">🌍 World Builder</div>
+            </div>
+
+            <nav class="nav-menu">
+                <div class="nav-item" ng-class="{active: activeTab === 'worldgen'}" ng-click="setActiveTab('worldgen')">
+                    <span class="nav-icon">🎨</span>
+                    <span class="nav-text">세계관 생성</span>
+                </div>
+                <div class="nav-item" ng-class="{active: activeTab === 'history'}" ng-click="setActiveTab('history')">
+                    <span class="nav-icon">📜</span>
+                    <span class="nav-text">세계 역사</span>
+                </div>
+                <div class="nav-item" ng-class="{active: activeTab === 'npcs'}" ng-click="setActiveTab('npcs')">
+                    <span class="nav-icon">🎭</span>
+                    <span class="nav-text">NPC 갤러리</span>
+                </div>
+                <div class="nav-item" ng-class="{active: activeTab === 'export'}" ng-click="setActiveTab('export')">
+                    <span class="nav-icon">📤</span>
+                    <span class="nav-text">내보내기</span>
+                </div>
+                <div class="nav-item" ng-class="{active: activeTab === 'settings'}" ng-click="setActiveTab('settings')">
+                    <span class="nav-icon">⚙️</span>
+                    <span class="nav-text">설정</span>
+                </div>
+            </nav>
+        </aside>
+
+        <!-- 메인 콘텐츠 -->
+        <main class="main-content">
+            <div class="top-bar">
+                <h1 class="page-title">{{getPageTitle()}}</h1>
+                <div>
+                    <button class="action-btn" ng-click="saveProject()">💾 저장</button>
+                    <button class="action-btn" ng-click="newProject()">🆕 새 프로젝트</button>
+                </div>
+            </div>
+
+            <div class="content-area">
+                <!-- 세계관 생성 탭 -->
+                <div class="tab-content" ng-class="{active: activeTab === 'worldgen'}">
+                    <div class="world-builder">
+                        <div class="panel">
+                            <h2 class="section-title">🎨 세계관 작성</h2>
+                            
+                            <div class="form-group">
+                                <label class="form-label">장르 선택</label>
+                                <div class="genre-grid">
+                                    <div class="genre-card" ng-class="{selected: selectedGenre === 'fantasy'}" ng-click="selectGenre('fantasy')">
+                                        <div class="genre-icon">🧙‍♂️</div>
+                                        <div class="genre-name">판타지</div>
+                                    </div>
+                                    <div class="genre-card" ng-class="{selected: selectedGenre === 'scifi'}" ng-click="selectGenre('scifi')">
+                                        <div class="genre-icon">🚀</div>
+                                        <div class="genre-name">SF</div>
+                                    </div>
+                                    <div class="genre-card" ng-class="{selected: selectedGenre === 'modern'}" ng-click="selectGenre('modern')">
+                                        <div class="genre-icon">🏙️</div>
+                                        <div class="genre-name">현대</div>
+                                    </div>
+                                    <div class="genre-card" ng-class="{selected: selectedGenre === 'horror'}" ng-click="selectGenre('horror')">
+                                        <div class="genre-icon">👻</div>
+                                        <div class="genre-name">호러</div>
+                                    </div>
+                                    <div class="genre-card" ng-class="{selected: selectedGenre === 'cyberpunk'}" ng-click="selectGenre('cyberpunk')">
+                                        <div class="genre-icon">🤖</div>
+                                        <div class="genre-name">사이버펑크</div>
+                                    </div>
+                                    <div class="genre-card" ng-class="{selected: selectedGenre === 'historical'}" ng-click="selectGenre('historical')">
+                                        <div class="genre-icon">🏛️</div>
+                                        <div class="genre-name">역사</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">게임 제목</label>
+                                <input type="text" class="form-input" ng-model="worldData.gameTitle" 
+                                       placeholder="게임의 제목을 입력하세요">
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">기본 설정</label>
+                                <textarea class="form-input textarea" ng-model="worldData.basicSetting" 
+                                          placeholder="게임의 기본적인 배경과 설정을 설명해주세요"></textarea>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">주요 갈등</label>
+                                <textarea class="form-input textarea" ng-model="worldData.mainConflict" 
+                                          placeholder="게임의 핵심 갈등이나 주요 사건을 설명해주세요"></textarea>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">특별한 요소</label>
+                                <textarea class="form-input textarea" ng-model="worldData.uniqueElements" 
+                                          placeholder="이 세계만의 독특한 요소들을 설명해주세요"></textarea>
+                            </div>
+
+                            <button class="generate-btn" ng-click="generateWorld()" ng-disabled="isGenerating">
+                                <span ng-if="!isGenerating">🎨 AI로 세계관 생성</span>
+                                <span ng-if="isGenerating">
+                                    <div class="loading-spinner"></div>
+                                    생성 중...
+                                </span>
+                            </button>
+
+                            <div class="error-message" ng-if="errorMessage">❌ {{errorMessage}}</div>
+                            <div class="success-message" ng-if="successMessage">✅ {{successMessage}}</div>
+                        </div>
+
+                        <div class="panel">
+                            <h2 class="section-title">🌟 생성된 세계관</h2>
+                            
+                            <div class="empty-state" ng-if="!generatedWorld.title">
+                                <div class="empty-icon">🎮</div>
+                                <p>왼쪽에서 정보를 입력하고<br>'AI로 세계관 생성' 버튼을 클릭하세요</p>
+                            </div>
+
+                            <div ng-if="generatedWorld.title">
+                                <div style="background: rgba(255,255,255,0.05); border-radius: 12px; padding: 20px;">
+                                    <h3 style="color: #fbbf24; margin-bottom: 10px;">{{generatedWorld.title}}</h3>
+                                    <p style="line-height: 1.6;">{{generatedWorld.overview}}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 세계 역사 탭 -->
+                <div class="tab-content" ng-class="{active: activeTab === 'history'}">
+                    <div class="panel">
+                        <h2 class="section-title">📜 세계의 역사</h2>
+                        
+                        <div ng-repeat="era in worldHistory" class="era-section">
+                            <div class="era-title">{{era.name}}</div>
+                            <div class="era-timeframe">{{era.timeframe}}</div>
+                            <div class="era-description">{{era.description}}</div>
+                        </div>
+
+                        <div class="empty-state" ng-if="worldHistory.length === 0">
+                            <div class="empty-icon">📜</div>
+                            <p>아직 세계 역사가 생성되지 않았습니다.<br>세계관 생성에서 AI로 세계관을 만들면<br>자동으로 역사가 생성됩니다.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- NPC 갤러리 탭 -->
+                <div class="tab-content" ng-class="{active: activeTab === 'npcs'}">
+                    <div class="panel">
+                        <h2 class="section-title">🎭 NPC 갤러리</h2>
+                        <button class="action-btn" ng-click="generateSampleNPCs()">샘플 NPC 생성</button>
+                    </div>
+
+                    <div class="npc-grid">
+                        <div class="npc-card" ng-repeat="npc in npcs">
+                            <div class="npc-header">
+                                <img ng-if="npc.imageUrl" ng-src="{{npc.imageUrl}}" alt="{{npc.name}}" class="npc-image">
+                                <div ng-if="!npc.imageUrl" class="npc-image-placeholder">{{getSpeciesIcon(npc.species)}}</div>
+                                
+                                <div class="npc-species-badge" ng-class="getSpeciesClass(npc.species)">
+                                    {{getSpeciesLabel(npc.species)}}
+                                </div>
+
+                                <div class="npc-level-badge">Lv.{{npc.level_requirement}}</div>
+
+                                <div class="npc-voice-indicator" 
+                                     ng-class="{'has-voice': npc.voiceUrl}"
+                                     ng-click="openVoiceModal(npc, $event)">
+                                    <span ng-if="!npc.voiceUrl">🎤</span>
+                                    <span ng-if="npc.voiceUrl">🔊</span>
+                                </div>
+                            </div>
+
+                            <div class="npc-content">
+                                <div class="npc-name">{{npc.name}}</div>
+                                <div class="npc-basic-info">
+                                    <div>{{npc.affiliation}}</div>
+                                    <div>{{npc.age}}세 {{getGenderLabel(npc.gender)}}</div>
+                                </div>
+
+                                <div class="npc-personality">{{npc.personality}}</div>
+
+                                <div class="npc-skills-list">
+                                    <span ng-repeat="skill in npc.skills" class="skill-tag">{{skill}}</span>
+                                </div>
+
+                                <div class="npc-actions">
+                                    <button class="npc-action-btn generate-image-btn" ng-click="generateNPCImage(npc)">🎨 이미지</button>
+                                    <button class="npc-action-btn generate-voice-btn" ng-click="openVoiceModal(npc, $event)">🎤 음성</button>
+                                    <button class="npc-action-btn" ng-click="viewNPCDetails(npc)">📋 상세</button>
+                                    <button class="npc-action-btn" ng-click="editNPC(npc)">✏️ 편집</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="empty-state" ng-if="npcs.length === 0">
+                        <div class="empty-icon">🎭</div>
+                        <p>샘플 NPC 생성 버튼을 클릭하세요</p>
+                    </div>
+                </div>
+
+                <!-- 내보내기 탭 -->
+                <div class="tab-content" ng-class="{active: activeTab === 'export'}">
+                    <div class="panel">
+                        <h2 class="section-title">📤 내보내기</h2>
+                        <div class="empty-state">
+                            <div class="empty-icon">📤</div>
+                            <p>내보내기 기능이 곧 추가될 예정입니다.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 설정 탭 -->
+                <div class="tab-content" ng-class="{active: activeTab === 'settings'}">
+                    <div class="panel">
+                        <h2 class="section-title">⚙️ 설정</h2>
+                        <div class="empty-state">
+                            <div class="empty-icon">⚙️</div>
+                            <p>설정 기능이 곧 추가될 예정입니다.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- 음성 생성 모달 -->
+        <div class="voice-modal" ng-if="showVoiceModal" ng-click="closeVoiceModal($event)">
+            <div class="voice-modal-content" ng-click="$event.stopPropagation()">
+                <div class="voice-modal-header">
+                    <div class="voice-modal-title">🎤 {{selectedNPCForVoice.name}} 음성 생성</div>
+                    <button class="close-btn" ng-click="closeVoiceModal()">&times;</button>
+                </div>
+
+                <div>
+                    <label class="form-label">음성 베이스 모델 선택</label>
+                    <div class="voice-base-grid">
+                        <div class="voice-base-card" 
+                             ng-class="{selected: voiceSettings.baseModel === 'young_male'}" 
+                             ng-click="selectVoiceBase('young_male')">
+                            <div class="voice-base-icon">👨</div>
+                            <div class="voice-base-name">젊은 남성</div>
+                        </div>
+                        <div class="voice-base-card" 
+                             ng-class="{selected: voiceSettings.baseModel === 'young_female'}" 
+                             ng-click="selectVoiceBase('young_female')">
+                            <div class="voice-base-icon">👩</div>
+                            <div class="voice-base-name">젊은 여성</div>
+                        </div>
+                        <div class="voice-base-card" 
+                             ng-class="{selected: voiceSettings.baseModel === 'middle_male'}" 
+                             ng-click="selectVoiceBase('middle_male')">
+                            <div class="voice-base-icon">🧔</div>
+                            <div class="voice-base-name">중년 남성</div>
+                        </div>
+                        <div class="voice-base-card" 
+                             ng-class="{selected: voiceSettings.baseModel === 'elder'}" 
+                             ng-click="selectVoiceBase('elder')">
+                            <div class="voice-base-icon">👴</div>
+                            <div class="voice-base-name">노인</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="margin-top: 20px;">
+                    <label class="form-label">음성 텍스트 입력</label>
+                    <textarea class="voice-textarea" 
+                              ng-model="voiceSettings.text" 
+                              placeholder="NPC가 말할 텍스트를 입력하세요"></textarea>
+                </div>
+
+                <button class="voice-generate-btn" 
+                        ng-click="generateVoice()" 
+                        ng-disabled="!voiceSettings.baseModel || !voiceSettings.text || isGeneratingVoice">
+                    <span ng-if="!isGeneratingVoice">🎤 음성 생성</span>
+                    <span ng-if="isGeneratingVoice">
+                        <div class="loading-spinner"></div>
+                        생성 중...
+                    </span>
+                </button>
+
+                <div class="voice-player" ng-if="selectedNPCForVoice.voiceUrl">
+                    <div style="font-weight: bold; color: #fbbf24; margin-bottom: 15px;">생성된 음성</div>
+                    <div class="voice-player-controls">
+                        <button class="voice-play-btn" ng-click="playVoice()">
+                            <span ng-if="!isPlayingVoice">▶️</span>
+                            <span ng-if="isPlayingVoice">⏸️</span>
+                        </button>
+                        <div style="color: #94a3b8;">"{{selectedNPCForVoice.lastVoiceText}}"</div>
+                    </div>
+                </div>
+
+                <div class="error-message" ng-if="voiceErrorMessage">❌ {{voiceErrorMessage}}</div>
+                <div class="success-message" ng-if="voiceSuccessMessage">✅ {{voiceSuccessMessage}}</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        angular.module('worldBuilder', [])
+        .controller('WorldController', ['$scope', function($scope) {
+            $scope.activeTab = 'worldgen';
+            $scope.selectedGenre = 'fantasy';
+            $scope.isGenerating = false;
+            $scope.errorMessage = '';
+            $scope.successMessage = '';
+
+            // 데이터 모델
+            $scope.worldData = {
+                gameTitle: '',
+                basicSetting: '',
+                mainConflict: '',
+                uniqueElements: ''
+            };
+
+            $scope.generatedWorld = {};
+            $scope.npcs = [];
+            $scope.worldHistory = [];
+
+            // 음성 관련 상태
+            $scope.showVoiceModal = false;
+            $scope.selectedNPCForVoice = null;
+            $scope.isGeneratingVoice = false;
+            $scope.isPlayingVoice = false;
+            $scope.voiceErrorMessage = '';
+            $scope.voiceSuccessMessage = '';
+            $scope.currentAudio = null;
+
+            $scope.voiceSettings = {
+                baseModel: '',
+                text: ''
+            };
+
+            $scope.setActiveTab = function(tab) {
+                $scope.activeTab = tab;
+                $scope.errorMessage = '';
+                $scope.successMessage = '';
+            };
+
+            $scope.getPageTitle = function() {
+                var titles = {
+                    'worldgen': '세계관 생성',
+                    'history': '세계 역사',
+                    'npcs': 'NPC 갤러리',
+                    'export': '내보내기',
+                    'settings': '설정'
+                };
+                return titles[$scope.activeTab] || '게임 세계관 도구';
+            };
+
+            $scope.selectGenre = function(genre) {
+                $scope.selectedGenre = genre;
+            };
+
+            // 세계관 생성
+            $scope.generateWorld = function() {
+                if (!$scope.worldData.gameTitle) {
+                    $scope.errorMessage = '게임 제목은 필수입니다.';
+                    return;
+                }
+
+                $scope.isGenerating = true;
+                $scope.errorMessage = '';
+
+                setTimeout(function() {
+                    $scope.generatedWorld = {
+                        title: $scope.worldData.gameTitle,
+                        overview: '생성된 세계관 개요입니다.'
+                    };
+                    
+                    $scope.generateSampleNPCs();
+                    $scope.generateSampleHistory();
+                    
+                    $scope.isGenerating = false;
+                    $scope.successMessage = '세계관이 성공적으로 생성되었습니다!';
+                    $scope.$apply();
+                }, 2000);
+            };
+
+            $scope.generateSampleHistory = function() {
+                $scope.worldHistory = [
+                    {
+                        name: '창조의 시대',
+                        timeframe: '기원전 3000년 - 기원전 2000년',
+                        description: '신들이 세계를 창조하고 첫 번째 문명이 탄생한 시대입니다.'
+                    },
+                    {
+                        name: '마법의 전성기',
+                        timeframe: '기원전 2000년 - 기원전 500년',
+                        description: '마법이 절정에 달한 시대로, 위대한 마법사들이 등장했습니다.'
+                    }
+                ];
+            };
+
+            $scope.generateSampleNPCs = function() {
+                $scope.npcs = [
+                    {
+                        id: "alaria-sol",
+                        name: "아라리아 솔",
+                        species: "human",
+                        gender: "female",
+                        age: 28,
+                        affiliation: "솔로리아 정찰대",
+                        personality: "호기심 많고 낙천적이지만 책임감이 강하다",
+                        skills: ["쌍단검", "암영 회피", "고대어 번역"],
+                        level_requirement: 5,
+                        imageUrl: null,
+                        voiceUrl: null,
+                        lastVoiceText: ''
+                    },
+                    {
+                        id: "sylen-arcline",
+                        name: "실렌 아크라인",
+                        species: "elf",
+                        gender: "male",
+                        age: 312,
+                        affiliation: "연금의 의회",
+                        personality: "치밀하고 냉철하며 예술적 감수성이 높다",
+                        skills: ["대규모 결계", "사격 마법", "정신 교감"],
+                        level_requirement: 12,
+                        imageUrl: 'https://via.placeholder.com/400x180/059669/ffffff?text=Sylen',
+                        voiceUrl: 'https://www.soundjay.com/misc/sounds/bell-ringing-05.wav',
+                        lastVoiceText: '안녕하세요, 모험가님. 저는 연금의 의회 소속 실렌입니다.'
+                    }
+                ];
+            };
+
+            $scope.getSpeciesLabel = function(species) {
+                var labels = { 'human': '인간', 'elf': '엘프', 'dwarf': '드워프', 'dragon': '용족' };
+                return labels[species] || species;
+            };
+
+            $scope.getSpeciesClass = function(species) {
+                return 'species-' + species;
+            };
+
+            $scope.getSpeciesIcon = function(species) {
+                var icons = { 'human': '👤', 'elf': '🧝', 'dwarf': '👨‍🏭', 'dragon': '🐉' };
+                return icons[species] || '👤';
+            };
+
+            $scope.getGenderLabel = function(gender) {
+                return gender === 'male' ? '남성' : '여성';
+            };
+
+            $scope.openVoiceModal = function(npc, event) {
+                if (event) event.stopPropagation();
+                $scope.selectedNPCForVoice = npc;
+                $scope.showVoiceModal = true;
+                $scope.voiceErrorMessage = '';
+                $scope.voiceSuccessMessage = '';
+                $scope.voiceSettings = {
+                    baseModel: $scope.getDefaultVoiceModel(npc),
+                    text: '안녕하세요, 모험가님. 저는 ' + npc.name + '입니다.'
+                };
+            };
+
+            $scope.closeVoiceModal = function(event) {
+                if (event) event.stopPropagation();
+                $scope.showVoiceModal = false;
+                $scope.selectedNPCForVoice = null;
+                $scope.stopVoice();
+            };
+
+            $scope.getDefaultVoiceModel = function(npc) {
+                if (npc.age > 60) return 'elder';
+                if (npc.gender === 'male') {
+                    return npc.age > 40 ? 'middle_male' : 'young_male';
+                } else {
+                    return 'young_female';
+                }
+            };
+
+            $scope.selectVoiceBase = function(baseModel) {
+                $scope.voiceSettings.baseModel = baseModel;
+            };
+
+            $scope.generateVoice = function() {
+                if (!$scope.voiceSettings.baseModel || !$scope.voiceSettings.text) {
+                    $scope.voiceErrorMessage = '음성 모델과 텍스트를 모두 입력해주세요.';
+                    return;
+                }
+
+                $scope.isGeneratingVoice = true;
+                $scope.voiceErrorMessage = '';
+                
+                // 서버에 전송할 데이터
+                var voiceRequestData = {
+                    npcId: $scope.selectedNPCForVoice.id,
+                    baseModel: $scope.voiceSettings.baseModel,
+                    text: $scope.voiceSettings.text,
+                    npcContext: {
+                        name: $scope.selectedNPCForVoice.name,
+                        species: $scope.selectedNPCForVoice.species,
+                        gender: $scope.selectedNPCForVoice.gender,
+                        age: $scope.selectedNPCForVoice.age
+                    }
+                };
+
+                // 실제 서버 통신: $http.post('/api/generate-npc-voice', voiceRequestData)
+
+                // 시뮬레이션
+                setTimeout(function() {
+                    $scope.selectedNPCForVoice.voiceUrl = 'https://www.soundjay.com/misc/sounds/bell-ringing-05.wav';
+                    $scope.selectedNPCForVoice.lastVoiceText = $scope.voiceSettings.text;
+                    $scope.isGeneratingVoice = false;
+                    $scope.voiceSuccessMessage = '음성이 성공적으로 생성되었습니다!';
+                    $scope.$apply();
+                }, 3000);
+            };
+
+            $scope.playVoice = function() {
+                if (!$scope.selectedNPCForVoice.voiceUrl) return;
+
+                if ($scope.isPlayingVoice) {
+                    $scope.stopVoice();
+                } else {
+                    $scope.currentAudio = new Audio($scope.selectedNPCForVoice.voiceUrl);
+                    $scope.isPlayingVoice = true;
+                    
+                    $scope.currentAudio.onended = function() {
+                        $scope.isPlayingVoice = false;
+                        $scope.$apply();
+                    };
+                    
+                    $scope.currentAudio.play();
+                }
+            };
+
+            $scope.stopVoice = function() {
+                if ($scope.currentAudio) {
+                    $scope.currentAudio.pause();
+                    $scope.currentAudio = null;
+                }
+                $scope.isPlayingVoice = false;
+            };
+
+            $scope.generateNPCImage = function(npc) {
+                setTimeout(function() {
+                    npc.imageUrl = 'https://via.placeholder.com/400x180/667eea/ffffff?text=' + encodeURIComponent(npc.name);
+                    $scope.$apply();
+                }, 2000);
+            };
+
+            $scope.viewNPCDetails = function(npc) {
+                alert('📋 ' + npc.name + '\n나이: ' + npc.age + '세\n소속: ' + npc.affiliation);
+            };
+
+            $scope.editNPC = function(npc) {
+                console.log('NPC 편집:', npc);
+            };
+
+            $scope.saveProject = function() {
+                alert('프로젝트가 저장되었습니다.');
+            };
+
+            $scope.newProject = function() {
+                if (confirm('새 프로젝트를 시작하시겠습니까?')) {
+                    $scope.npcs = [];
+                    $scope.setActiveTab('worldgen');
+                }
+            };
+        }]);
+    </script>
+</body>
+</html>
