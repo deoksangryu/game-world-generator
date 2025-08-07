@@ -23,8 +23,8 @@ Game World Generator는 AI 기술을 활용하여 인터랙티브한 게임 세�
 - 보상 시스템
 
 ### 🎨 **멀티미디어 생성**
-- NPC 이미지 생성 (OpenAI DALL-E)
-- 무기/장비 이미지 생성
+- NPC 이미지 생성 (OpenAI DALL-E, FLUX 1.1-dev)
+- 무기/장비 이미지 생성 (FLUX 1.1-dev)
 - 3D 모델 생성 (Stable Fast 3D)
 - 음성 합성 및 클로닝 (Zonos)
 - 대화 비디오 생성 (SadTalker)
@@ -49,6 +49,7 @@ Game World Generator는 AI 기술을 활용하여 인터랙티브한 게임 세�
 ### **AI/ML**
 - **OpenAI GPT-4o** - 대화 및 콘텐츠 생성
 - **OpenAI DALL-E** - 이미지 생성
+- **FLUX 1.1-dev** - 고품질 이미지 생성 (무기, NPC)
 - **Sentence Transformers** - 텍스트 임베딩
 - **FAISS** - 벡터 검색
 - **Stable Fast 3D** - 3D 모델 생성
@@ -173,7 +174,8 @@ export OPENAI_API_KEY="your-api-key-here"
 
 #### **3. 멀티미디어 생성**
 - ✅ OpenAI DALL-E를 활용한 NPC 이미지 생성
-- ✅ 무기/장비 이미지 생성 시스템
+- ✅ FLUX 1.1-dev를 활용한 고품질 무기/장비 이미지 생성
+- ✅ NPC 얼굴 생성 (FLUX ControlNet)
 - ✅ Stable Fast 3D를 통한 3D 모델 생성
 - ✅ Zonos를 활용한 음성 클로닝
 - ✅ SadTalker를 통한 대화 비디오 생성
@@ -187,8 +189,9 @@ export OPENAI_API_KEY="your-api-key-here"
 ### **🔧 기술적 성과**
 - **192개 파일**, **64,733줄의 코드**
 - **다중 가상환경** 기반 마이크로서비스 아키텍처
-- **실시간 AI 통합** (GPT-4o, DALL-E, RAG)
+- **실시간 AI 통합** (GPT-4o, DALL-E, FLUX, RAG)
 - **멀티미디어 파이프라인** (텍스트 → 이미지 → 음성 → 비디오)
+- **최신 AI 모델 통합** (FLUX 1.1-dev, ControlNet)
 
 ## 🔧 개발 가이드
 
