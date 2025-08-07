@@ -7,14 +7,14 @@ Game World Generator는 AI 기술을 활용하여 인터랙티브한 게임 세�
 ## ✨ 주요 기능
 
 ### 🌍 **세계관 생성**
-- AI 기반 게임 세계 자동 생성
+- AI 기반 게임 세계 자동 생성 (OpenAI GPT-4o)
 - 테마별 맞춤형 설정 (판타지, SF, 현대 등)
 - 풍부한 배경 스토리와 설정
 
 ### 👥 **NPC 시스템**
 - 개성 있는 NPC 자동 생성
 - 직업별 특성화된 캐릭터
-- 실시간 AI 대화 시스템
+- 실시간 AI 대화 시스템 (RAG 기반)
 - 음성 클로닝 및 비디오 생성
 
 ### 🎯 **퀘스트 시스템**
@@ -23,25 +23,28 @@ Game World Generator는 AI 기술을 활용하여 인터랙티브한 게임 세�
 - 보상 시스템
 
 ### 🎨 **멀티미디어 생성**
-- NPC 이미지 생성 (DALL-E)
+- NPC 이미지 생성 (OpenAI DALL-E)
 - 무기/장비 이미지 생성
 - 3D 모델 생성 (Stable Fast 3D)
-- 음성 합성 및 클로닝
+- 음성 합성 및 클로닝 (Zonos)
 - 대화 비디오 생성 (SadTalker)
 
 ## 🏗️ 기술 스택
 
 ### **Frontend**
-- **Angular 17** - 모던 웹 프레임워크
-- **TypeScript** - 타입 안전성
+- **Angular 20** - 모던 웹 프레임워크
+- **TypeScript 5.8** - 타입 안전성
 - **SCSS** - 스타일링
-- **RxJS** - 반응형 프로그래밍
+- **RxJS 7.8** - 반응형 프로그래밍
+- **Angular Material 20** - UI 컴포넌트
+- **Three.js 0.176** - 3D 렌더링
 
 ### **Backend**
 - **Python 3.9+** - 서버 로직
-- **FastAPI** - RESTful API
-- **OpenAI API** - GPT, DALL-E 통합
-- **Pydantic** - 데이터 검증
+- **FastAPI 0.104.1** - RESTful API
+- **OpenAI API 1.3.0** - GPT, DALL-E 통합
+- **Pydantic 2.5.0** - 데이터 검증
+- **Uvicorn 0.24.0** - ASGI 서버
 
 ### **AI/ML**
 - **OpenAI GPT-4o** - 대화 및 콘텐츠 생성
@@ -50,6 +53,7 @@ Game World Generator는 AI 기술을 활용하여 인터랙티브한 게임 세�
 - **FAISS** - 벡터 검색
 - **Stable Fast 3D** - 3D 모델 생성
 - **SadTalker** - 비디오 생성
+- **Zonos** - 음성 클로닝
 
 ### **데이터베이스 & 저장소**
 - **Local Storage** - 클라이언트 데이터
@@ -60,19 +64,20 @@ Game World Generator는 AI 기술을 활용하여 인터랙티브한 게임 세�
 
 ```
 Game_World/
-├── game-world-ui/          # Angular 프론트엔드
+├── game-world-ui/          # Angular 20 프론트엔드
 │   ├── src/app/
 │   │   ├── components/     # UI 컴포넌트들
 │   │   ├── services/       # 비즈니스 로직
 │   │   └── models/         # 데이터 모델
 │   └── src/assets/         # 정적 리소스
 ├── server/                 # Python 백엔드
-│   ├── openai_venv/       # 메인 AI 서버
-│   ├── voice_venv/        # 음성 처리
-│   ├── talk_venv/         # 대화 처리
+│   ├── openai_venv/       # 메인 AI 서버 (FastAPI)
+│   ├── voice_venv/        # 음성 처리 (Zonos)
+│   ├── talk_venv/         # 대화 처리 (SadTalker)
 │   ├── 3d_venv/          # 3D 모델링
 │   └── npc_venv/         # NPC AI
-└── world-generator/       # 월드 생성기
+├── world-generator/       # Angular 18 월드 생성기
+└── stable-fast-3d/       # 3D 모델 생성
 ```
 
 ## 🚀 설치 및 실행
@@ -84,7 +89,7 @@ Game_World/
 
 ### **1. 저장소 클론**
 ```bash
-git clone https://github.com/your-username/game-world-generator.git
+git clone https://github.com/deoksangryu/game-world-generator.git
 cd game-world-generator
 ```
 
@@ -204,9 +209,8 @@ MIT License - 자세한 내용은 [LICENSE](LICENSE) 파일을 참조하세요.
 
 ## 🔗 관련 링크
 
-- [데모 사이트](https://your-demo-site.com)
-- [API 문서](https://your-api-docs.com)
-- [이슈 트래커](https://github.com/your-username/game-world-generator/issues)
+- [GitHub 저장소](https://github.com/deoksangryu/game-world-generator)
+- [이슈 트래커](https://github.com/deoksangryu/game-world-generator/issues)
 
 ---
 
