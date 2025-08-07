@@ -71,6 +71,9 @@ load/
 *.gif
 *.ico
 
+# Demo videos (allow these)
+!*_추가샘플영상.mp4
+
 # Build outputs
 dist/
 build/
